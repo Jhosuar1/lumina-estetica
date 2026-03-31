@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LÚMINA — Estética Integral · Pereira</title>
+<meta name="description" content="Estética integral en Pereira. Faciales, depilación, Hollywood Peel, suero terapia, retiro de tatuajes y más. Agenda tu cita online.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rose:        #e8a0b0;
+  --rose-light:  #f5d6de;
+  --rose-pale:   #fdf0f3;
+  --rose-deep:   #c4607a;
+  --rose-dark:   #8b3a52;
+  --gold:        #c9a96e;
+  --gold-light:  #e8d5b0;
+  --cream:       #fef8f5;
+  --cream-dark:  #f0e4e0;
+  --text:        #2a1a20;
+  --text-mid:    #6b4450;
+  --text-light:  #a87888;
+  --white:       #ffffff;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Jost', sans-serif;
+  --transition:   0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--rose); border-radius: 3px; }
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 48px;
+  background: rgba(254,248,245,0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(232,160,176,0.2);
+  transition: var(--transition);
+}
+nav.scrolled {
+  padding: 12px 48px;
+  box-shadow: 0 4px 32px rgba(196,96,122,0.08);
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 6px;
+  color: var(--rose-dark);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--gold); }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-mid); text-decoration: none;
+  transition: color var(--transition); font-weight: 400;
+}
+.nav-links a:hover { color: var(--rose-deep); }
+.nav-cta {
+  background: var(--rose-dark);
+  color: var(--white) !important;
+  padding: 10px 24px;
+  border-radius: 2px;
+  font-size: 11px !important;
+  letter-spacing: 2px;
+}
+.nav-cta:hover { background: var(--rose-deep) !important; color: var(--white) !important; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+.hamburger span { width: 24px; height: 1.5px; background: var(--rose-dark); display: block; transition: var(--transition); }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 120px 48px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 80% 50%, rgba(245,214,222,0.55) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(201,169,110,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-petals {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.petal {
+  position: absolute;
+  border-radius: 50% 0 50% 0;
+  opacity: 0.12;
+  animation: floatPetal linear infinite;
+}
+.petal:nth-child(1)  { width:18px;height:28px;background:var(--rose);    top:-5%;left:15%; animation-duration:18s;animation-delay:0s; }
+.petal:nth-child(2)  { width:12px;height:20px;background:var(--gold);     top:-5%;left:35%; animation-duration:22s;animation-delay:3s; }
+.petal:nth-child(3)  { width:22px;height:32px;background:var(--rose-deep);top:-5%;left:55%; animation-duration:16s;animation-delay:6s; }
+.petal:nth-child(4)  { width:14px;height:22px;background:var(--rose);     top:-5%;left:72%; animation-duration:20s;animation-delay:1s; }
+.petal:nth-child(5)  { width:10px;height:16px;background:var(--gold);     top:-5%;left:88%; animation-duration:25s;animation-delay:8s; }
+.petal:nth-child(6)  { width:20px;height:30px;background:var(--rose-light);top:-5%;left:5%; animation-duration:19s;animation-delay:4s; }
+.petal:nth-child(7)  { width:16px;height:24px;background:var(--rose);     top:-5%;left:48%; animation-duration:21s;animation-delay:11s; }
+.petal:nth-child(8)  { width:8px; height:14px;background:var(--gold);     top:-5%;left:92%; animation-duration:17s;animation-delay:2s; }
+@keyframes floatPetal {
+  0%   { transform: translateY(0)    rotate(0deg)   translateX(0); opacity:0.12; }
+  10%  { opacity: 0.2; }
+  90%  { opacity: 0.1; }
+  100% { transform: translateY(110vh) rotate(360deg) translateX(60px); opacity:0; }
+}
+.hero-content {
+  max-width: 580px; position: relative; z-index: 1;
+  animation: fadeUp 1s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(40px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 24px;
+}
+.hero-tag::before, .hero-tag::after {
+  content: ''; display: block; width: 24px; height: 1px; background: var(--gold);
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 8vw, 96px);
+  font-weight: 300;
+  line-height: 0.95;
+  color: var(--rose-dark);
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+.hero h1 em {
+  font-style: italic; color: var(--rose-deep);
+  display: block;
+}
+.hero-sub {
+  font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--text-light); margin: 24px 0 40px;
+  font-weight: 300;
+}
+.hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--rose-dark); color: var(--white);
+  padding: 16px 40px; border: none; cursor: pointer;
+  font-family: var(--font-body); font-size: 12px;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  border-radius: 2px; text-decoration: none;
+  transition: var(--transition); display: inline-block;
+  position: relative; overflow: hidden;
+}
+.btn-primary::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255,255,255,0.1); transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+.btn-primary:hover::after { transform: translateX(0); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139,58,82,0.3); }
+.btn-secondary {
+  background: transparent; color: var(--rose-dark);
+  padding: 16px 40px; border: 1px solid var(--rose);
+  cursor: pointer; font-family: var(--font-body); font-size: 12px;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  border-radius: 2px; text-decoration: none;
+  transition: var(--transition); display: inline-block;
+}
+.btn-secondary:hover { background: var(--rose-pale); transform: translateY(-2px); }
+.hero-visual {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 45%;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; animation: fadeUp 1.2s ease 0.2s both;
+}
+.hero-circle {
+  width: min(440px, 90%); height: min(440px, 90%);
+  border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  background: linear-gradient(135deg, var(--rose-light) 0%, var(--rose) 50%, var(--rose-deep) 100%);
+  opacity: 0.25;
+  animation: morphBlob 8s ease-in-out infinite;
+}
+@keyframes morphBlob {
+  0%,100% { border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%; }
+  33%     { border-radius: 45% 55% 40% 60% / 60% 40% 55% 45%; }
+  66%     { border-radius: 55% 45% 60% 40% / 40% 60% 45% 55%; }
+}
+.hero-deco-text {
+  position: absolute; right: 5%; bottom: 15%;
+  font-family: var(--font-display); font-size: 120px;
+  font-weight: 300; color: rgba(232,160,176,0.08);
+  letter-spacing: -4px; user-select: none; white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ─── SECTION BASE ─── */
+section { padding: 100px 48px; }
+.section-label {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::after { content:''; flex:1; max-width:48px; height:1px; background:var(--gold); }
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 300; color: var(--rose-dark);
+  line-height: 1.1; margin-bottom: 48px;
+}
+.section-title em { font-style: italic; color: var(--rose-deep); }
+
+/* ─── ABOUT STRIP ─── */
+.about-strip {
+  background: var(--rose-dark); color: var(--white);
+  padding: 48px; display: flex; gap: 64px; align-items: center;
+  flex-wrap: wrap; overflow: hidden; position: relative;
+}
+.about-strip::before {
+  content: 'LÚMINA';
+  position: absolute; right: -20px; top: -20px;
+  font-family: var(--font-display); font-size: 140px; font-weight: 300;
+  color: rgba(255,255,255,0.04); pointer-events: none; user-select: none;
+  white-space: nowrap;
+}
+.stat { text-align: center; flex: 1; min-width: 120px; }
+.stat-num {
+  font-family: var(--font-display); font-size: 52px; font-weight: 300;
+  color: var(--rose-light); line-height: 1;
+}
+.stat-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.7; margin-top: 8px; }
+.about-divider { width: 1px; height: 60px; background: rgba(255,255,255,0.2); }
+
+/* ─── SERVICES ─── */
+.services { background: var(--cream); }
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2px;
+  margin-top: 0;
+}
+.service-card {
+  background: var(--white); padding: 40px 32px;
+  cursor: pointer; transition: var(--transition);
+  position: relative; overflow: hidden;
+  border: 1px solid var(--cream-dark);
+}
+.service-card::before {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.service-card:hover::before { transform: scaleX(1); }
+.service-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(196,96,122,0.12); z-index: 1; }
+.service-icon {
+  font-size: 28px; margin-bottom: 20px; display: block;
+  filter: grayscale(0.3);
+}
+.service-name {
+  font-family: var(--font-display); font-size: 22px; font-weight: 400;
+  color: var(--rose-dark); margin-bottom: 10px;
+}
+.service-desc { font-size: 13px; line-height: 1.7; color: var(--text-light); margin-bottom: 20px; }
+.service-price {
+  font-family: var(--font-display); font-size: 18px; color: var(--gold);
+  font-weight: 400;
+}
+.service-duration {
+  font-size: 11px; letter-spacing: 1.5px; color: var(--text-light);
+  text-transform: uppercase; margin-top: 4px;
+}
+.service-btn {
+  margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--rose-deep); text-decoration: none;
+  transition: gap var(--transition);
+}
+.service-btn:hover { gap: 14px; }
+
+/* ─── BOOKING ─── */
+#reservar { background: var(--rose-pale); }
+.booking-wrapper {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start;
+}
+.booking-info p {
+  font-size: 15px; line-height: 1.8; color: var(--text-mid); margin-bottom: 24px;
+}
+.booking-hours { margin-top: 32px; }
+.booking-hours h4 {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px;
+}
+.hours-grid { display: flex; flex-direction: column; gap: 8px; }
+.hours-row {
+  display: flex; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--rose-light);
+  font-size: 13px; color: var(--text-mid);
+}
+.hours-row .day { font-weight: 400; }
+.hours-row .time { color: var(--rose-dark); font-family: var(--font-display); font-size: 15px; }
+
+/* BOOKING FORM */
+.booking-form {
+  background: var(--white);
+  padding: 48px; border: 1px solid var(--rose-light);
+  border-radius: 4px;
+  box-shadow: 0 24px 64px rgba(196,96,122,0.08);
+}
+.booking-form h3 {
+  font-family: var(--font-display); font-size: 28px; font-weight: 400;
+  color: var(--rose-dark); margin-bottom: 32px;
+}
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block; font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text-light); margin-bottom: 8px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%; padding: 14px 16px;
+  border: 1px solid var(--cream-dark);
+  background: var(--cream); color: var(--text);
+  font-family: var(--font-body); font-size: 14px;
+  border-radius: 2px; outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  appearance: none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 3px rgba(232,160,176,0.15);
+  background: var(--white);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group select { cursor: pointer; }
+
+/* Calendar */
+.calendar-wrapper { margin-bottom: 20px; }
+.calendar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.calendar-title { font-family: var(--font-display); font-size: 18px; color: var(--rose-dark); }
+.cal-nav {
+  background: none; border: 1px solid var(--rose-light); width: 32px; height: 32px;
+  border-radius: 50%; cursor: pointer; color: var(--rose-dark); font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.cal-nav:hover { background: var(--rose-pale); }
+.calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+.cal-day-name {
+  text-align: center; font-size: 10px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-light); padding: 6px 0;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--text-mid); border-radius: 50%;
+  cursor: pointer; transition: var(--transition); border: none; background: none;
+  font-family: var(--font-body);
+}
+.cal-day:hover:not(.empty):not(.past) { background: var(--rose-pale); color: var(--rose-deep); }
+.cal-day.selected { background: var(--rose-dark); color: var(--white) !important; }
+.cal-day.today { border: 1px solid var(--rose); color: var(--rose-deep); font-weight: 500; }
+.cal-day.past { color: var(--cream-dark); cursor: not-allowed; }
+.cal-day.empty { cursor: default; }
+
+/* Time slots */
+.time-slots { display: none; margin-top: 16px; }
+.time-slots.visible { display: block; }
+.time-slots-title {
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-light); margin-bottom: 12px;
+}
+.slots-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.slot {
+  padding: 10px 6px; text-align: center; font-size: 12px;
+  border: 1px solid var(--cream-dark); border-radius: 2px;
+  cursor: pointer; transition: var(--transition); color: var(--text-mid);
+  background: var(--white); font-family: var(--font-body);
+}
+.slot:hover:not(.occupied) { border-color: var(--rose); color: var(--rose-deep); background: var(--rose-pale); }
+.slot.selected { background: var(--rose-dark); color: var(--white); border-color: var(--rose-dark); }
+.slot.occupied { background: var(--cream-dark); color: var(--text-light); cursor: not-allowed; text-decoration: line-through; opacity: 0.5; }
+
+/* Payment */
+.payment-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--cream-dark); }
+.payment-title {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-light); margin-bottom: 16px;
+}
+.payment-methods { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.pay-method {
+  flex: 1; min-width: 100px; padding: 12px;
+  border: 1px solid var(--cream-dark); border-radius: 4px;
+  text-align: center; cursor: pointer; transition: var(--transition);
+  font-size: 11px; color: var(--text-mid); letter-spacing: 0.5px;
+}
+.pay-method:hover, .pay-method.active { border-color: var(--rose); background: var(--rose-pale); color: var(--rose-dark); }
+.pay-method .pay-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+.security-badge {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text-light); margin-top: 12px;
+}
+.security-badge svg { flex-shrink: 0; }
+
+/* Confirm button */
+.btn-confirm {
+  width: 100%; padding: 18px;
+  background: linear-gradient(135deg, var(--rose-dark), var(--rose-deep));
+  color: var(--white); border: none; cursor: pointer;
+  font-family: var(--font-body); font-size: 12px;
+  letter-spacing: 3px; text-transform: uppercase;
+  border-radius: 2px; margin-top: 24px;
+  transition: var(--transition);
+}
+.btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139,58,82,0.35); }
+.btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* recaptcha notice */
+.recaptcha-note {
+  font-size: 10px; color: var(--text-light); text-align: center; margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* ─── MODAL CONFIRMACIÓN ─── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(42,26,32,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.active { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--white); max-width: 440px; width: 90%;
+  padding: 48px; border-radius: 4px;
+  transform: translateY(24px); transition: transform 0.3s;
+  text-align: center;
+}
+.modal-overlay.active .modal { transform: translateY(0); }
+.modal-icon { font-size: 48px; margin-bottom: 16px; }
+.modal h3 { font-family: var(--font-display); font-size: 28px; color: var(--rose-dark); margin-bottom: 12px; }
+.modal p { font-size: 14px; color: var(--text-mid); line-height: 1.7; margin-bottom: 24px; }
+.modal-close {
+  padding: 14px 40px;
+  background: var(--rose-dark); color: var(--white);
+  border: none; cursor: pointer; font-family: var(--font-body);
+  font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  border-radius: 2px; transition: var(--transition);
+}
+.modal-close:hover { background: var(--rose-deep); }
+
+/* ─── GALLERY / AMBIANCE ─── */
+.ambiance { background: var(--cream); }
+.ambiance-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 200px 200px;
+  gap: 8px;
+}
+.ambiance-item {
+  background: linear-gradient(135deg, var(--rose-light), var(--rose));
+  border-radius: 4px; overflow: hidden; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.ambiance-item:nth-child(1) { grid-row: span 2; }
+.ambiance-item:nth-child(3) { background: linear-gradient(135deg, var(--gold-light), var(--gold)); }
+.ambiance-item:nth-child(4) { background: linear-gradient(135deg, var(--rose), var(--rose-deep)); }
+.ambiance-item:nth-child(5) { background: linear-gradient(135deg, var(--cream-dark), var(--rose-light)); }
+.ambiance-placeholder {
+  text-align: center; color: rgba(255,255,255,0.6);
+}
+.ambiance-placeholder span { font-size: 28px; display: block; margin-bottom: 8px; }
+.ambiance-placeholder p { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
+.gallery-note {
+  text-align: center; margin-top: 24px;
+  font-size: 12px; color: var(--text-light); letter-spacing: 1px;
+}
+
+/* ─── LOCATION ─── */
+.location-section { background: var(--rose-pale); }
+.location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+.location-info { }
+.location-info p { font-size: 15px; line-height: 1.8; color: var(--text-mid); margin-bottom: 24px; }
+.info-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 16px 0; border-bottom: 1px solid var(--rose-light);
+}
+.info-item:last-child { border-bottom: none; }
+.info-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.info-text h5 {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 4px;
+}
+.info-text p { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+.map-container {
+  border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--rose-light);
+  box-shadow: 0 12px 40px rgba(196,96,122,0.1);
+}
+.map-container iframe {
+  width: 100%; height: 380px; display: block; border: none;
+  filter: saturate(0.8) hue-rotate(-10deg);
+}
+
+/* ─── SOCIAL FLOAT ─── */
+.social-float {
+  position: fixed; right: 24px; bottom: 24px; z-index: 90;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.social-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--white); font-size: 20px; text-decoration: none;
+  transition: var(--transition); box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.social-btn.whatsapp { background: #25D366; }
+.social-btn.instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.social-btn:hover { transform: scale(1.12) translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--text); color: rgba(255,255,255,0.7);
+  padding: 64px 48px 32px;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; margin-bottom: 48px;
+}
+.footer-brand .logo {
+  font-family: var(--font-display); font-size: 32px; font-weight: 300;
+  letter-spacing: 6px; color: var(--rose-light); margin-bottom: 16px;
+}
+.footer-brand p { font-size: 13px; line-height: 1.8; max-width: 280px; }
+.footer-col h5 {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 20px;
+}
+.footer-col a, .footer-col p {
+  display: block; font-size: 13px; color: rgba(255,255,255,0.6);
+  text-decoration: none; margin-bottom: 10px; line-height: 1.6;
+  transition: color var(--transition);
+}
+.footer-col a:hover { color: var(--rose-light); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 24px; display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: gap;
+}
+.footer-bottom p { font-size: 12px; }
+.footer-social { display: flex; gap: 16px; }
+.footer-social a {
+  font-size: 18px; color: rgba(255,255,255,0.4);
+  transition: color var(--transition); text-decoration: none;
+}
+.footer-social a:hover { color: var(--rose-light); }
+
+/* ─── LOADING SCREEN ─── */
+.loading {
+  position: fixed; inset: 0; background: var(--cream);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 9999; transition: opacity 0.6s, visibility 0.6s;
+}
+.loading.hidden { opacity: 0; visibility: hidden; }
+.loading-logo {
+  font-family: var(--font-display); font-size: 42px; font-weight: 300;
+  letter-spacing: 8px; color: var(--rose-dark);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.loading-line {
+  width: 0; height: 1px; background: linear-gradient(90deg, var(--rose), var(--gold));
+  margin-top: 16px; animation: loadLine 1.5s ease forwards 0.3s;
+}
+@keyframes loadLine { to { width: 120px; } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .hero { padding: 100px 24px 60px; }
+  .hero-visual { display: none; }
+  section { padding: 72px 24px; }
+  .booking-wrapper { grid-template-columns: 1fr; }
+  .location-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+  .about-strip { padding: 32px 24px; gap: 32px; }
+  .ambiance-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+  .ambiance-item:nth-child(1) { grid-row: auto; grid-column: span 2; }
+}
+
+@media (max-width: 600px) {
+  .slots-grid { grid-template-columns: repeat(3,1fr); }
+  .form-row { grid-template-columns: 1fr; }
+  .ambiance-grid { grid-template-columns: 1fr; }
+  .ambiance-item:nth-child(1) { grid-column: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div class="loading" id="loading">
+  <div class="loading-logo">LÚMINA</div>
+  <div class="loading-line"></div>
+</div>
+
+<!-- Floating social buttons -->
+<div class="social-float">
+  <a href="https://wa.me/573213428678?text=Hola!%20Quiero%20agendar%20una%20cita%20en%20LÚMINA" target="_blank" class="social-btn whatsapp" title="WhatsApp">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+  <a href="https://www.instagram.com/luminaesteticaintegral" target="_blank" class="social-btn instagram" title="Instagram">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+  </a>
+</div>
+
+<!-- Navigation -->
+<nav id="navbar">
+  <a href="#inicio" class="nav-logo">LÚM<span>I</span>NA</a>
+  <ul class="nav-links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#reservar">Reservar</a></li>
+    <li><a href="#ubicacion">Ubicación</a></li>
+    <li><a href="#reservar" class="nav-cta">Agendar cita</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-petals">
+    <div class="petal"></div><div class="petal"></div><div class="petal"></div>
+    <div class="petal"></div><div class="petal"></div><div class="petal"></div>
+    <div class="petal"></div><div class="petal"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-tag">Estética Integral · Pereira</div>
+    <h1>Donde tu <em>belleza</em> brilla</h1>
+    <p class="hero-sub">Tratamientos de alta precisión · Resultados visibles</p>
+    <div class="hero-actions">
+      <a href="#reservar" class="btn-primary">Agendar mi cita</a>
+      <a href="#servicios" class="btn-secondary">Ver servicios</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-circle"></div>
+  </div>
+  <div class="hero-deco-text">LÚMINA</div>
+</section>
+
+<!-- ABOUT STRIP -->
+<div class="about-strip">
+  <div class="stat">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Productos certificados</div>
+  </div>
+  <div class="about-divider"></div>
+  <div class="stat">
+    <div class="stat-num">7+</div>
+    <div class="stat-label">Tipos de tratamientos</div>
+  </div>
+  <div class="about-divider"></div>
+  <div class="stat">
+    <div class="stat-num">24h</div>
+    <div class="stat-label">Agendamiento online</div>
+  </div>
+  <div class="about-divider"></div>
+  <div class="stat">
+    <div class="stat-num">★ 5</div>
+    <div class="stat-label">Experiencia garantizada</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="services" id="servicios">
+  <div class="section-label">Lo que ofrecemos</div>
+  <div class="section-title">Nuestros <em>tratamientos</em></div>
+  <div class="services-grid" id="services-grid">
+    <!-- Generated by JS -->
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="ambiance" id="galeria">
+  <div class="section-label">Nuestro espacio</div>
+  <div class="section-title">Un ambiente <em>diseñado</em> para ti</div>
+  <div class="ambiance-grid">
+    <div class="ambiance-item">
+      <div class="ambiance-placeholder">
+        <span>🌸</span><p>Foto principal<br>del local</p>
+      </div>
+    </div>
+    <div class="ambiance-item">
+      <div class="ambiance-placeholder">
+        <span>✨</span><p>Tratamientos</p>
+      </div>
+    </div>
+    <div class="ambiance-item">
+      <div class="ambiance-placeholder">
+        <span>💆</span><p>Zona facial</p>
+      </div>
+    </div>
+    <div class="ambiance-item">
+      <div class="ambiance-placeholder">
+        <span>🌿</span><p>Productos</p>
+      </div>
+    </div>
+    <div class="ambiance-item">
+      <div class="ambiance-placeholder">
+        <span>💎</span><p>Resultados</p>
+      </div>
+    </div>
+  </div>
+  <p class="gallery-note">📸 Las fotos reales de LÚMINA se agregarán aquí desde el panel de administración</p>
+</section>
+
+<!-- BOOKING -->
+<section id="reservar">
+  <div class="section-label">Reserva tu espacio</div>
+  <div class="section-title">Agenda tu <em>cita</em></div>
+  <div class="booking-wrapper">
+    <div class="booking-info">
+      <p>En LÚMINA cada cita es una experiencia pensada para ti. Selecciona el servicio, elige tu fecha y hora disponible, y realiza tu pago de forma segura directamente desde aquí.</p>
+      <p>Recibirás una confirmación por WhatsApp con todos los detalles de tu cita.</p>
+      <div class="booking-hours">
+        <h4>Horarios de atención</h4>
+        <div class="hours-grid" id="hours-grid">
+          <!-- JS generated -->
+        </div>
+      </div>
+    </div>
+
+    <div class="booking-form">
+      <h3>Nueva reserva</h3>
+
+      <!-- Step 1: Service -->
+      <div class="form-group">
+        <label>Servicio</label>
+        <select id="service-select">
+          <option value="">Selecciona un tratamiento</option>
+        </select>
+      </div>
+
+      <!-- Step 2: Personal info -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <input type="text" id="client-name" placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp</label>
+          <input type="tel" id="client-phone" placeholder="+57 300 000 0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="client-email" placeholder="tu@correo.com">
+      </div>
+
+      <!-- Step 3: Calendar -->
+      <div class="calendar-wrapper">
+        <label style="display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;">Selecciona la fecha</label>
+        <div class="calendar-header">
+          <button class="cal-nav" id="cal-prev">‹</button>
+          <span class="calendar-title" id="cal-title"></span>
+          <button class="cal-nav" id="cal-next">›</button>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+      </div>
+
+      <!-- Time slots -->
+      <div class="time-slots" id="time-slots">
+        <div class="time-slots-title">Horarios disponibles</div>
+        <div class="slots-grid" id="slots-grid"></div>
+      </div>
+
+      <!-- Payment -->
+      <div class="payment-section" id="payment-section" style="display:none">
+        <div class="payment-title">Método de pago</div>
+        <div class="payment-methods">
+          <div class="pay-method active" data-method="tarjeta">
+            <span class="pay-icon">💳</span>Tarjeta
+          </div>
+          <div class="pay-method" data-method="nequi">
+            <span class="pay-icon">📱</span>Nequi
+          </div>
+          <div class="pay-method" data-method="pse">
+            <span class="pay-icon">🏦</span>PSE
+          </div>
+          <div class="pay-method" data-method="efectivo">
+            <span class="pay-icon">💵</span>Efectivo
+          </div>
+        </div>
+        <div class="security-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Pago 100% seguro · SSL encriptado · Procesado por Wompi
+        </div>
+      </div>
+
+      <button class="btn-confirm" id="btn-confirm" disabled onclick="submitBooking()">
+        Confirmar reserva
+      </button>
+      <p class="recaptcha-note">
+        Protegido por Google reCAPTCHA v3 · <a href="https://policies.google.com/privacy" style="color:inherit">Privacidad</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section class="location-section" id="ubicacion">
+  <div class="section-label">Encuéntranos</div>
+  <div class="section-title">Visítanos en <em>Pereira</em></div>
+  <div class="location-grid">
+    <div class="location-info">
+      <div class="info-item">
+        <span class="info-icon">📍</span>
+        <div class="info-text">
+          <h5>Dirección</h5>
+          <p>Carrera 21 #66-51, La Rivera San Fernando<br>Pereira, Risaralda</p>
+        </div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">📱</span>
+        <div class="info-text">
+          <h5>WhatsApp</h5>
+          <p><a href="https://wa.me/573213428678" style="color:var(--rose-deep);text-decoration:none">+57 321 342 8678</a></p>
+        </div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">📸</span>
+        <div class="info-text">
+          <h5>Instagram</h5>
+          <p><a href="https://www.instagram.com/luminaesteticaintegral" target="_blank" style="color:var(--rose-deep);text-decoration:none">@luminaesteticaintegral</a></p>
+        </div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">🕐</span>
+        <div class="info-text">
+          <h5>Horarios</h5>
+          <p id="hours-location">Ver horarios en la sección de reservas</p>
+        </div>
+      </div>
+      <div style="margin-top:32px">
+        <a href="https://wa.me/573213428678?text=Hola!%20Quiero%20información%20sobre%20los%20servicios%20de%20LÚMINA" target="_blank" class="btn-primary">Escribir por WhatsApp</a>
+      </div>
+    </div>
+    <div class="map-container">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.0!2d-75.69!3d4.81!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNCw4MQ!5e0!3m2!1ses!2sco!4v1"
+        allowfullscreen="" loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">LÚMINA</div>
+      <p>Estética integral en Pereira. Tratamientos de alta precisión para revelar tu mejor versión. Donde la ciencia y el cuidado se encuentran.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Servicios</h5>
+      <a href="#servicios">Faciales & Skincare</a>
+      <a href="#servicios">Hollywood Peel</a>
+      <a href="#servicios">Depilación</a>
+      <a href="#servicios">Suero Terapia</a>
+      <a href="#servicios">Retiro de Tatuajes</a>
+      <a href="#servicios">Tratamientos Corporales</a>
+    </div>
+    <div class="footer-col">
+      <h5>Contacto</h5>
+      <p>Cra 21 #66-51, La Rivera<br>San Fernando, Pereira</p>
+      <a href="https://wa.me/573213428678">+57 321 342 8678</a>
+      <a href="https://instagram.com/luminaesteticaintegral">@luminaesteticaintegral</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 LÚMINA Estética Integral · Pereira, Colombia</p>
+    <div class="footer-social">
+      <a href="https://wa.me/573213428678" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+      <a href="https://instagram.com/luminaesteticaintegral" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon">🌸</div>
+    <h3>¡Cita confirmada!</h3>
+    <p id="modal-text">Tu reserva ha sido registrada. Recibirás un mensaje de WhatsApp con los detalles de tu cita en LÚMINA.</p>
+    <button class="modal-close" onclick="closeModal()">Perfecto, gracias</button>
+  </div>
+</div>
+
+<script>
+// ─── DATA (editable desde el panel admin) ───────────────────────────
+const LUMINA_DATA = {
+  services: [
+    { id:1, name:"Faciales & Skincare",              icon:"✨", desc:"Limpieza profunda, hidratación y tratamientos personalizados para tu tipo de piel.",        price:null, duration:null },
+    { id:2, name:"Depilación",                       icon:"🌿", desc:"Depilación con cera tibia, fría o hilo. Resultados duraderos con mínima irritación.",       price:null, duration:null },
+    { id:3, name:"Hollywood Peel",                   icon:"⚡", desc:"Peeling de carbono con láser Nd:YAG. Piel luminosa, poros reducidos, sin tiempo de inactividad.", price:null, duration:null },
+    { id:4, name:"Suero Terapia",                    icon:"💉", desc:"Aplicación de sueros activos concentrados con tecnología de penetración avanzada.",           price:null, duration:null },
+    { id:5, name:"Fortalecimiento Capilar",          icon:"💆", desc:"Tratamiento para el cuero cabelludo: nutre folículos, reduce caída y estimula el crecimiento.", price:null, duration:null },
+    { id:6, name:"Retiro de Tatuajes",               icon:"🔬", desc:"Láser especializado para eliminación segura y efectiva de tatuajes de todos los colores.",     price:null, duration:null },
+    { id:7, name:"Tratamientos Corporales",          icon:"🌸", desc:"Reductores, reafirmantes, drenaje linfático y más. Resultados visibles desde la primera sesión.", price:null, duration:null },
+  ],
+  hours: [
+    { day: "Lunes – Viernes", time: "8:00 am – 7:00 pm" },
+    { day: "Sábado",          time: "8:00 am – 5:00 pm" },
+    { day: "Domingo",         time: "Cerrado" },
+  ],
+  // Simulated booked slots (in production: fetched from Supabase)
+  bookedSlots: {
+    // "2025-03-15": ["09:00", "10:30", "14:00"]
+  },
+  workHours: { start: 8, end: 19, interval: 30 } // 30-min slots
+};
+
+// ─── RENDER SERVICES ────────────────────────────────────────────────
+function renderServices() {
+  const grid = document.getElementById('services-grid');
+  const sel  = document.getElementById('service-select');
+  LUMINA_DATA.services.forEach(s => {
+    // Card
+    const card = document.createElement('div');
+    card.className = 'service-card';
+    card.innerHTML = `
+      <span class="service-icon">${s.icon}</span>
+      <div class="service-name">${s.name}</div>
+      <p class="service-desc">${s.desc}</p>
+      <div class="service-price">${s.price ? '$'+s.price.toLocaleString('es-CO') : 'Consultar precio'}</div>
+      <div class="service-duration">${s.duration ? s.duration+' min' : 'Duración variable'}</div>
+      <a href="#reservar" class="service-btn">Agendar ahora →</a>
+    `;
+    grid.appendChild(card);
+    // Select option
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.name + (s.price ? ' — $'+s.price.toLocaleString('es-CO') : '');
+    sel.appendChild(opt);
+  });
+}
+
+// ─── RENDER HOURS ────────────────────────────────────────────────────
+function renderHours() {
+  const grid = document.getElementById('hours-grid');
+  LUMINA_DATA.hours.forEach(h => {
+    const row = document.createElement('div');
+    row.className = 'hours-row';
+    row.innerHTML = `<span class="day">${h.day}</span><span class="time">${h.time}</span>`;
+    grid.appendChild(row);
+  });
+}
+
+// ─── CALENDAR ────────────────────────────────────────────────────────
+let currentDate = new Date();
+let selectedDate = null;
+let selectedSlot = null;
+
+function renderCalendar() {
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const days   = ['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+  const grid   = document.getElementById('calendar-grid');
+  const title  = document.getElementById('cal-title');
+  grid.innerHTML = '';
+  title.textContent = months[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+
+  // Day names
+  days.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-name'; el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  for (let i=0; i<firstDay; i++) {
+    const el = document.createElement('button');
+    el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  for (let d=1; d<=daysInMonth; d++) {
+    const el  = document.createElement('button');
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), d);
+    date.setHours(0,0,0,0);
+    const isPast   = date < today;
+    const isSunday = date.getDay() === 0;
+    const isToday  = date.getTime() === today.getTime();
+    const dateStr  = formatDate(date);
+    const isSelected = selectedDate === dateStr;
+    el.className = 'cal-day' + (isPast||isSunday?' past':'') + (isToday?' today':'') + (isSelected?' selected':'');
+    el.textContent = d;
+    if (!isPast && !isSunday) {
+      el.onclick = () => selectDate(dateStr);
+    }
+    grid.appendChild(el);
+  }
+}
+
+function formatDate(date) {
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+}
+
+function selectDate(dateStr) {
+  selectedDate = dateStr;
+  selectedSlot = null;
+  renderCalendar();
+  renderSlots(dateStr);
+  document.getElementById('time-slots').classList.add('visible');
+  document.getElementById('payment-section').style.display = 'none';
+  checkConfirm();
+}
+
+function renderSlots(dateStr) {
+  const grid = document.getElementById('slots-grid');
+  grid.innerHTML = '';
+  const booked = LUMINA_DATA.bookedSlots[dateStr] || [];
+  const { start, end, interval } = LUMINA_DATA.workHours;
+  for (let h = start; h < end; h++) {
+    for (let m = 0; m < 60; m += interval) {
+      const timeStr = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      const isOccupied = booked.includes(timeStr);
+      const btn = document.createElement('button');
+      btn.className = 'slot' + (isOccupied?' occupied':'') + (selectedSlot===timeStr?' selected':'');
+      btn.textContent = timeStr;
+      btn.disabled = isOccupied;
+      if (!isOccupied) btn.onclick = () => selectSlot(timeStr);
+      grid.appendChild(btn);
+    }
+  }
+}
+
+function selectSlot(time) {
+  selectedSlot = time;
+  renderSlots(selectedDate);
+  document.getElementById('payment-section').style.display = 'block';
+  checkConfirm();
+  document.getElementById('payment-section').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+document.getElementById('cal-prev').onclick = () => {
+  currentDate.setMonth(currentDate.getMonth()-1);
+  renderCalendar();
+};
+document.getElementById('cal-next').onclick = () => {
+  currentDate.setMonth(currentDate.getMonth()+1);
+  renderCalendar();
+};
+
+// ─── PAYMENT METHOD ──────────────────────────────────────────────────
+document.querySelectorAll('.pay-method').forEach(el => {
+  el.onclick = () => {
+    document.querySelectorAll('.pay-method').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+  };
+});
+
+// ─── CONFIRM BUTTON ──────────────────────────────────────────────────
+function checkConfirm() {
+  const name    = document.getElementById('client-name').value.trim();
+  const phone   = document.getElementById('client-phone').value.trim();
+  const service = document.getElementById('service-select').value;
+  const btn     = document.getElementById('btn-confirm');
+  btn.disabled  = !(name && phone && service && selectedDate && selectedSlot);
+}
+['client-name','client-phone','client-email','service-select'].forEach(id => {
+  document.getElementById(id).addEventListener('input', checkConfirm);
+});
+
+// ─── SUBMIT ──────────────────────────────────────────────────────────
+function submitBooking() {
+  const name    = document.getElementById('client-name').value.trim();
+  const phone   = document.getElementById('client-phone').value.trim();
+  const email   = document.getElementById('client-email').value.trim();
+  const svcId   = document.getElementById('service-select').value;
+  const svc     = LUMINA_DATA.services.find(s => s.id == svcId);
+  const method  = document.querySelector('.pay-method.active')?.dataset.method || 'tarjeta';
+
+  // Mark slot as booked (in production: POST to /api/bookings)
+  if (!LUMINA_DATA.bookedSlots[selectedDate]) LUMINA_DATA.bookedSlots[selectedDate] = [];
+  LUMINA_DATA.bookedSlots[selectedDate].push(selectedSlot);
+
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const [y,m,d] = selectedDate.split('-');
+  const dateLabel = `${parseInt(d)} de ${months[parseInt(m)-1]} de ${y}`;
+
+  document.getElementById('modal-text').textContent =
+    `${name}, tu cita de ${svc.name} el ${dateLabel} a las ${selectedSlot} ha sido reservada. Método: ${method}. Te escribiremos al ${phone} para confirmar.`;
+
+  document.getElementById('modal').classList.add('active');
+
+  // Reset
+  selectedDate = null; selectedSlot = null;
+  renderCalendar();
+  document.getElementById('time-slots').classList.remove('visible');
+  document.getElementById('payment-section').style.display = 'none';
+  document.getElementById('client-name').value = '';
+  document.getElementById('client-phone').value = '';
+  document.getElementById('client-email').value = '';
+  document.getElementById('service-select').value = '';
+  checkConfirm();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+// ─── NAV SCROLL ──────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ─── HAMBURGER (mobile) ──────────────────────────────────────────────
+document.getElementById('hamburger').onclick = () => {
+  const links = document.querySelector('.nav-links');
+  if (links.style.display === 'flex') {
+    links.style.display = 'none';
+  } else {
+    links.style.cssText = 'display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:var(--cream);padding:24px;gap:20px;border-bottom:1px solid var(--rose-light);';
+  }
+};
+
+// ─── LOADING ─────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loading').classList.add('hidden'), 800);
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+renderServices();
+renderHours();
+renderCalendar();
+</script>
+</body>
+</html>
