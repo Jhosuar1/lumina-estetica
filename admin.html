@@ -1014,8 +1014,8 @@ async function loadFin(){
   (ventas||[]).forEach(v=>{const m=v.fecha?.slice(0,7);if(m){if(!months[m])months[m]={inc:0,exp:0};months[m].inc+=Number(v.monto);}});
   (gastos||[]).forEach(g=>{const m=g.fecha?.slice(0,7);if(m){if(!months[m])months[m]={inc:0,exp:0};months[m].exp+=Number(g.monto);}});
   document.getElementById('monthly-sum').innerHTML=Object.entries(months).sort((a,b)=>b[0].localeCompare(a[0])).map(([m,v])=>{
-    const bal=v.inc-v.exp;
-    return `<tr><td><b>${m}</b></td><td style="color:var(--green)">${cop(v.inc)}</td><td style="color:var(--red)">${cop(v.exp)}</td><td style="color:${bal>=0?'var(--green)':'var(--red)';font-weight:500}">${cop(bal)}</td></tr>`;
+    const bal = v.inc - v.exp;
+    return `<tr><td><b>${m}</b></td><td style="color:var(--green)">${cop(v.inc)}</td><td style="color:var(--red)">${cop(v.exp)}</td><td style="color:${bal >= 0 ? 'var(--green)' : 'var(--red)'}; font-weight:500">${cop(bal)}</td></tr>`;
   }).join('');
 }
 async function saveGasto(){
