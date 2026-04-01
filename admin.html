@@ -1072,14 +1072,12 @@ async function saveConfig(){
     {clave:'intervalo',valor:document.getElementById('cfg-interval').value}
   ];
   for(const c of cfgs){
-    // Primero intenta actualizar
     const r=await fetch(SUPA_URL+'/rest/v1/config?clave=eq.'+c.clave,{
       method:'PATCH',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
       body:JSON.stringify({valor:c.valor})
     });
     const data=await r.json().catch(()=>[]);
-    // Si no actualizó ninguna fila, inserta
     if(!data||!data.length){
       await fetch(SUPA_URL+'/rest/v1/config',{
         method:'POST',
@@ -1088,6 +1086,30 @@ async function saveConfig(){
       });
     }
   }
+
+  // ← AQUÍ va el bloque de horarios por día
+  for(let i=0;i<=6;i++){
+    const openEl=document.getElementById('open-'+i);
+    const closeEl=document.getElementById('close-'+i);
+    if(openEl&&closeEl){
+      const especial={clave:'horario_dia_'+i,valor:JSON.stringify({open:openEl.value,close:closeEl.value})};
+      const r2=await fetch(SUPA_URL+'/rest/v1/config?clave=eq.'+especial.clave,{
+        method:'PATCH',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+        body:JSON.stringify({valor:especial.valor})
+      });
+      const d2=await r2.json().catch(()=>[]);
+      if(!d2||!d2.length){
+        await fetch(SUPA_URL+'/rest/v1/config',{
+          method:'POST',
+          headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},
+          body:JSON.stringify(especial)
+        });
+      }
+    }
+  }
+
+  // ← El alert siempre al final
   alert('✅ Configuración guardada correctamente.');
 }
 async function saveBizConfig(){alert('✅ Datos guardados correctamente.');}
