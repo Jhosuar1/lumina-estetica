@@ -712,7 +712,7 @@ async function loadDashboard(){
   const thisMonth=today.slice(0,7);
   const [citas,ventas,clientes,inventario]=await Promise.all([
     db('citas?fecha=eq.'+today+'&select=*').catch(()=>[]),
-    db('ventas?fecha=like.'+thisMonth+'*&select=*').catch(()=>[]),
+    db('ventas?fecha=gte.'+thisMonth+'-01&fecha=lte.'+thisMonth+'-31&select=*').catch(()=>[]),
     db('clientes?select=id',{headers:{'Prefer':'count=exact'}}).catch(()=>[]),
     db('inventario?select=*').catch(()=>[])
   ]);
@@ -1056,10 +1056,19 @@ async function saveConfig(){
     {clave:'intervalo',valor:document.getElementById('cfg-interval').value}
   ];
   for(const c of cfgs){
-    try{await db(`config?clave=eq.${c.clave}`,{method:'PATCH',body:JSON.stringify({valor:c.valor}),headers:{'Prefer':'resolution=merge-duplicates'}});}
-    catch(e){await db('config',{method:'POST',body:JSON.stringify(c)}).catch(()=>{});}
+    // Upsert: inserta si no existe, actualiza si existe
+    await fetch(SUPA_URL+'/rest/v1/config',{
+      method:'POST',
+      headers:{
+        'apikey':SUPA_KEY,
+        'Authorization':'Bearer '+SUPA_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'resolution=merge-duplicates'
+      },
+      body:JSON.stringify(c)
+    });
   }
-  alert('✅ Configuración guardada. Los cambios se reflejan en la página pública.');
+  alert('✅ Horarios guardados. Ya se reflejan en la página pública.');
 }
 async function saveBizConfig(){alert('✅ Datos guardados correctamente.');}
 function changePass(){
