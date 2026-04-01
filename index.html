@@ -827,8 +827,13 @@ async function submitBooking() {
     document.getElementById('client-email').value = '';
     document.getElementById('service-select').value = '';
     document.getElementById('subcat-group').classList.remove('visible');
-  } catch(e) {
-    alert('Hubo un problema al registrar tu cita. Por favor intenta de nuevo o escríbenos por WhatsApp.');
+  } catch (e) {
+    console.error('❌ ERROR REAL SUPABASE:', e);
+  
+    let msg = 'Hubo un problema al registrar tu cita.';
+    if (e?.message) msg += '\n\n' + e.message;
+  
+    alert(msg);
   }
   btn.disabled = false; btn.classList.remove('loading'); btn.textContent = 'Confirmar reserva';
   checkConfirm();
