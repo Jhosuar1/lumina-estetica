@@ -1056,19 +1056,23 @@ async function saveConfig(){
     {clave:'intervalo',valor:document.getElementById('cfg-interval').value}
   ];
   for(const c of cfgs){
-    // Upsert: inserta si no existe, actualiza si existe
-    await fetch(SUPA_URL+'/rest/v1/config',{
-      method:'POST',
-      headers:{
-        'apikey':SUPA_KEY,
-        'Authorization':'Bearer '+SUPA_KEY,
-        'Content-Type':'application/json',
-        'Prefer':'resolution=merge-duplicates'
-      },
-      body:JSON.stringify(c)
+    // Primero intenta actualizar
+    const r=await fetch(SUPA_URL+'/rest/v1/config?clave=eq.'+c.clave,{
+      method:'PATCH',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({valor:c.valor})
     });
+    const data=await r.json().catch(()=>[]);
+    // Si no actualizó ninguna fila, inserta
+    if(!data||!data.length){
+      await fetch(SUPA_URL+'/rest/v1/config',{
+        method:'POST',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify(c)
+      });
+    }
   }
-  alert('✅ Horarios guardados. Ya se reflejan en la página pública.');
+  alert('✅ Configuración guardada correctamente.');
 }
 async function saveBizConfig(){alert('✅ Datos guardados correctamente.');}
 function changePass(){
