@@ -1039,13 +1039,29 @@ async function loadConfig(){
     });
   }catch(e){renderHoursConfig([1,2,3,4,5,6]);}
 }
-function renderHoursConfig(open=[]){
+function renderHoursConfig(open=[], horariosEspeciales={}){
   const DAYS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   document.getElementById('hours-config').innerHTML=DAYS.map((d,i)=>`
-    <div class="toggle-wrap">
-      <span>${d}</span>
-      <label class="tog"><input type="checkbox" id="day-${i}" ${open.includes(i)?'checked':''}><span class="tslider"></span></label>
+    <div class="toggle-wrap" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+        <span>${d}</span>
+        <label class="tog"><input type="checkbox" id="day-${i}" ${open.includes(i)?'checked':''}><span class="tslider"></span></label>
+      </div>
+      <div id="hours-day-${i}" style="${open.includes(i)?'':'display:none'};display:${open.includes(i)?'flex':'none'};gap:8px;width:100%">
+        <div class="fg" style="flex:1;margin:0"><label style="font-size:9px">Abre</label>
+          <input type="time" id="open-${i}" value="${horariosEspeciales[i]?.open||document.getElementById('cfg-open')?.value||'08:00'}" style="padding:6px;font-size:12px">
+        </div>
+        <div class="fg" style="flex:1;margin:0"><label style="font-size:9px">Cierra</label>
+          <input type="time" id="close-${i}" value="${horariosEspeciales[i]?.close||document.getElementById('cfg-close')?.value||'19:00'}" style="padding:6px;font-size:12px">
+        </div>
+      </div>
     </div>`).join('');
+  // Mostrar/ocultar horas al activar día
+  DAYS.forEach((_,i)=>{
+    document.getElementById('day-'+i).addEventListener('change',function(){
+      document.getElementById('hours-day-'+i).style.display=this.checked?'flex':'none';
+    });
+  });
 }
 async function saveConfig(){
   const dias=[0,1,2,3,4,5,6].filter(i=>document.getElementById('day-'+i)?.checked).join(',');
