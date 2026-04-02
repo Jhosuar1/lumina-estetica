@@ -1262,6 +1262,7 @@ async function initApp(){
   setInterval(checkNewCitas,30000);
   const today=new Date().toISOString().slice(0,10);
   ['nc-d','vt-dt','gs-dt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+  loadGalleryAdmin();
 }
 </script>
 </body>
