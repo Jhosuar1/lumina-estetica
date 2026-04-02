@@ -342,15 +342,12 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
 
 <!-- GALLERY -->
 <section class="gallery" id="galeria">
-  <div class="section-label">Nuestro espacio</div>
-  <div class="section-title">Un ambiente <em>diseñado</em> para ti</div>
-  <div class="gallery-grid" id="gallery-grid">
-    <div class="gallery-item"><div class="gallery-placeholder"><span>🌸</span><p>Foto principal</p></div></div>
-    <div class="gallery-item"><div class="gallery-placeholder"><span>✨</span><p>Tratamientos</p></div></div>
-    <div class="gallery-item"><div class="gallery-placeholder"><span>💆</span><p>Zona facial</p></div></div>
-    <div class="gallery-item"><div class="gallery-placeholder"><span>🌿</span><p>Productos</p></div></div>
-    <div class="gallery-item"><div class="gallery-placeholder"><span>💎</span><p>Resultados</p></div></div>
-  </div>
+  <div class="section-label">Nuestro trabajo</div>
+  <div class="section-title">Publicaciones <em>recientes</em></div>
+  <div id="feed-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+  <p style="text-align:center;margin-top:20px;font-size:12px;color:var(--text-light)">
+    <a href="https://www.instagram.com/luminaesteticaintegral" target="_blank" style="color:var(--rose-deep);text-decoration:none">Ver más en @luminaesteticaintegral →</a>
+  </p>
 </section>
 
 <!-- RECOMENDACIONES -->
@@ -575,11 +572,50 @@ let SERVICES = [], CONFIG = {}, PROMO = null;
 let selectedDate = null, selectedSlot = null;
 let currentMonth = new Date();
 
+async function loadFeed(){
+  try{
+    const rows=await supaFetch('galeria?activo=eq.true&select=*&order=created_at.desc&limit=9');
+    const grid=document.getElementById('feed-grid');
+    if(!rows||!rows.length){grid.style.display='none';return;}
+    grid.innerHTML=rows.map(m=>`
+      <div style="border-radius:8px;overflow:hidden;border:1px solid var(--rose-light);position:relative;aspect-ratio:1;background:var(--rose-pale)">
+        ${m.tipo==='video'
+          ?`<video src="${m.url}" controls style="width:100%;height:100%;object-fit:cover"></video>`
+          :`<img src="${m.url}" alt="${m.titulo||'LÚMINA'}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`}
+        ${m.titulo?`<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(42,26,32,.7));color:#fff;padding:12px;font-size:12px">${m.titulo}</div>`:''}
+      </div>`).join('');
+  }catch(e){}
+}
+
+async function loadZonasServicio(svcId, svcNombre){
+  try{
+    const zonas=await supaFetch(`zonas_servicio?servicio_id=eq.${svcId}&select=*&order=orden`);
+    if(!zonas||!zonas.length)return;
+    // Agrupar por categoría
+    const cats={};
+    zonas.forEach(z=>{if(!cats[z.categoria])cats[z.categoria]=[];cats[z.categoria].push(z);});
+    const html=Object.entries(cats).map(([cat,items])=>`
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;border-bottom:1px solid var(--rose-light);padding-bottom:6px">${cat}</div>
+        ${items.map(z=>`
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--cream-dark);font-size:13px">
+            <span style="color:var(--text-mid)">${z.nombre}</span>
+            <span style="font-family:var(--font-d);font-size:16px;color:var(--rose-dark)">${z.precio?'$'+Number(z.precio).toLocaleString('es-CO'):'Consultar'}</span>
+          </div>`).join('')}
+      </div>`).join('');
+    // Mostrar en modal o en la tarjeta del servicio
+    document.getElementById('modal-text').innerHTML=`<div style="text-align:left;max-height:60vh;overflow-y:auto">${html}</div>`;
+    document.querySelector('#modal h3').textContent=svcNombre+' · Precios por sesión';
+    document.getElementById('modal').classList.add('active');
+  }catch(e){}
+}
+  
 // ── INIT ──
 async function init() {
   await Promise.all([loadConfig(), loadServices(), loadPromo()]);
   renderHours();
   renderCalendar();
+  await loadFeed();
   setTimeout(() => document.getElementById('loading').classList.add('hidden'), 600);
 }
 
@@ -596,7 +632,7 @@ async function loadConfig() {
 
 async function loadServices() {
   try {
-    const rows = await supaFetch('servicios?select=*,subcategorias(*)&activo=eq.true&order=id');
+    const rows = await supaFetch('servicios?select=*,subcategorias(*),zonas_servicio(*)&activo=eq.true&order=id');
     SERVICES = rows || [];
   } catch(e) { SERVICES = []; }
   renderServices();
@@ -632,6 +668,12 @@ function renderServices() {
     const subHTML = subcats.length ? `<div class="service-subcats">${subcats.map(sc=>`<span class="subcat-tag">${sc.nombre}</span>`).join('')}</div>` : '';
     const card = document.createElement('div');
     card.className = 'service-card';
+    const hasZones = s.zonas_servicio && s.zonas_servicio.length > 0;
+    const btnText = hasZones ? 'Ver precios →' : 'Agendar ahora →';
+    const btnClick = hasZones
+      ? `loadZonasServicio(${s.id}, '${s.nombre.replace(/'/g, '')}')`
+      : `document.getElementById('reservar').scrollIntoView({behavior:'smooth'})`;
+
     card.innerHTML = `
       <span class="service-icon">${s.icono || '✨'}</span>
       <div class="service-name">${s.nombre}</div>
@@ -639,7 +681,7 @@ function renderServices() {
       ${subHTML}
       <div class="service-price">${price}</div>
       <div class="service-duration">${dur}</div>
-      <button class="service-btn" onclick="document.getElementById('reservar').scrollIntoView({behavior:'smooth'})">Agendar ahora →</button>`;
+      <button class="service-btn" onclick="${btnClick}">${btnText}</button>`;
     grid.appendChild(card);
     const opt = document.createElement('option');
     opt.value = s.id; opt.textContent = s.nombre + (s.precio ? ' — $' + Number(s.precio).toLocaleString('es-CO') : '');
