@@ -172,6 +172,16 @@ tbody tr:hover{background:var(--rose-pale)}
 .logo-upload-area:hover{border-color:var(--rose);background:var(--rose-pale)}
 .logo-preview{width:80px;height:80px;border-radius:50%;object-fit:contain;margin:0 auto 10px;display:block;border:2px solid var(--rose-light)}
 
+.post-card{background:var(--white);border:1px solid var(--rose-light);border-radius:8px;overflow:hidden;transition:var(--tr)}
+.post-card:hover{box-shadow:0 8px 24px rgba(139,58,82,.08)}
+.post-media{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--rose-pale)}
+.post-body{padding:14px}
+.post-caption{font-size:13px;color:var(--text-mid);line-height:1.6;margin-bottom:10px;white-space:pre-wrap}
+.post-date{font-size:10px;color:var(--text-light);letter-spacing:1px}
+.post-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--cream-dark)}
+.upload-zone{border:2px dashed var(--rose-light);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--cream)}
+.upload-zone:hover{border-color:var(--rose);background:var(--rose-pale)}
+  
 /* RESPONSIVE */
 @media(max-width:900px){
   .sidebar{transform:translateX(-100%)}
@@ -457,16 +467,65 @@ tbody tr:hover{background:var(--rose-pale)}
         </div>
         <button class="btn btn-p" style="margin-top:14px" onclick="saveConfig()">Guardar horarios</button>
       </div>
+
       <div class="sett-sec">
-        <h3>Publicaciones — Imágenes y Videos</h3>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px">Se mostrarán en la página pública como un feed tipo Instagram.</p>
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-          <input type="file" id="img-input" accept="image/*" multiple style="display:none" onchange="uploadMedia(this,'imagen')">
-          <input type="file" id="vid-input" accept="video/*" style="display:none" onchange="uploadMedia(this,'video')">
-          <button class="btn btn-o" onclick="document.getElementById('img-input').click()">📷 Subir imagen</button>
-          <button class="btn btn-o" onclick="document.getElementById('vid-input').click()">🎬 Subir video</button>
+        <h3>Publicaciones</h3>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><span class="card-title">Nueva publicación</span></div>
+          <div style="padding:20px">
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('media-input').click()">
+              <div id="upload-preview" style="display:none;margin-bottom:12px"></div>
+              <div id="upload-placeholder">
+                <div style="font-size:32px;margin-bottom:8px">📷</div>
+                <p style="font-size:13px;color:var(--text-mid)">Haz clic para seleccionar imagen o video</p>
+                <p style="font-size:11px;color:var(--text-light);margin-top:4px">JPG, PNG, MP4</p>
+              </div>
+            </div>
+            <input type="file" id="media-input" accept="image/*,video/*" style="display:none" onchange="previewMedia(this)">
+            <div class="fg" style="margin-top:14px">
+              <label>Descripción</label>
+              <textarea id="post-caption" rows="3" placeholder="Describe el tratamiento, resultado o comparte un tip... ✨"></textarea>
+            </div>
+            <div class="fr" style="margin-top:4px">
+              <div class="fg">
+                <label>Categoría</label>
+                <select id="post-cat">
+                  <option value="">Sin categoría</option>
+                  <option>Antes y después</option>
+                  <option>Facial & Skincare</option>
+                  <option>Depilación Láser</option>
+                  <option>Hollywood Peel</option>
+                  <option>Suero Terapia</option>
+                  <option>Tratamientos Corporales</option>
+                  <option>Retiro de Tatuajes</option>
+                  <option>Fortalecimiento Capilar</option>
+                  <option>Promoción</option>
+                  <option>Tips de belleza</option>
+                </select>
+              </div>
+              <div class="fg" style="display:flex;align-items:flex-end">
+                <button class="btn btn-p" style="width:100%;padding:13px" onclick="publishPost()">Publicar 🌸</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="gallery-admin-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:13px;color:var(--text-mid)" id="posts-count">Cargando...</span>
+          <select id="filter-cat" style="padding:7px 11px;border:1px solid var(--rose-light);border-radius:4px;font-family:var(--font-b);font-size:12px;background:var(--cream)" onchange="loadGalleryAdmin()">
+            <option value="">Todas las categorías</option>
+            <option>Antes y después</option>
+            <option>Facial & Skincare</option>
+            <option>Depilación Láser</option>
+            <option>Hollywood Peel</option>
+            <option>Suero Terapia</option>
+            <option>Tratamientos Corporales</option>
+            <option>Retiro de Tatuajes</option>
+            <option>Fortalecimiento Capilar</option>
+            <option>Promoción</option>
+            <option>Tips de belleza</option>
+          </select>
+        </div>
+        <div id="gallery-admin-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px"></div>
       </div>
 
       <div class="sett-sec">
@@ -1135,42 +1194,6 @@ function changePass(){
   document.getElementById('cfg-np').value='';document.getElementById('cfg-cp').value='';
 }
 
-// LOGO
-// LOGO
-async function uploadLogo(input){
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const base64 = e.target.result;
-    // Guardar en Supabase para que persista
-    await fetch(SUPA_URL+'/rest/v1/config?clave=eq.logo_url', {
-      method: 'PATCH',
-      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
-      body: JSON.stringify({valor: base64})
-    });
-    showLogo(base64);
-    alert('✅ Logo guardado. Ya aparece en la página pública.');
-  };
-  reader.readAsDataURL(file);
-}
-
-function showLogo(src){
-  ['login-logo-img','sb-logo-img'].forEach(id=>{
-    const img = document.getElementById(id);
-    if (img) { img.src = src; img.style.display = 'block'; }
-  });
-  const ph1 = document.getElementById('login-logo-ph');
-  const ph2 = document.getElementById('sb-logo-ph');
-  if (ph1) ph1.style.display = 'none';
-  if (ph2) ph2.style.display = 'none';
-  const prev = document.getElementById('logo-preview');
-  if (prev) { prev.src = src; prev.style.display = 'block'; }
-  const placeholder = document.getElementById('logo-placeholder');
-  if (placeholder) placeholder.style.display = 'none';
-}
-
-  
 
 // NOTIFICATIONS (realtime polling)
 async function checkNewCitas(){
@@ -1237,39 +1260,124 @@ function checkMobile(){
   if(window.innerWidth<900){btn.style.display='block';}else{btn.style.display='none';document.getElementById('sidebar').classList.remove('open');}
 }
 window.addEventListener('resize',checkMobile);
-  async function uploadMedia(input, tipo){
-  const files=Array.from(input.files);
-  for(const file of files){
-    const reader=new FileReader();
-    reader.onload=async e=>{
-      await db('galeria',{method:'POST',body:JSON.stringify({
-        tipo, url:e.target.result,
-        titulo:file.name.replace(/\.[^.]+$/,''),
-        activo:true, orden:0
+
+
+let pendingMediaFile = null;
+
+function previewMedia(input){
+  const file = input.files[0];
+  if (!file) return;
+  pendingMediaFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('upload-preview');
+    const placeholder = document.getElementById('upload-placeholder');
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    if (file.type.startsWith('video/')) {
+      preview.innerHTML = `<video src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:6px" controls></video>`;
+    } else {
+      preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:6px;object-fit:contain">`;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function publishPost(){
+  if (!pendingMediaFile) { alert('Selecciona una imagen o video primero.'); return; }
+  const caption = document.getElementById('post-caption').value.trim();
+  const cat = document.getElementById('post-cat').value;
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Publicando...';
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      await db('galeria', {method:'POST', body:JSON.stringify({
+        tipo: pendingMediaFile.type.startsWith('video/') ? 'video' : 'imagen',
+        url: e.target.result,
+        titulo: cat || 'Publicación',
+        descripcion: caption,
+        activo: true, orden: 0
       })});
-      loadGalleryAdmin();
-    };
-    reader.readAsDataURL(file);
-  }
-  input.value='';
+      pendingMediaFile = null;
+      document.getElementById('media-input').value = '';
+      document.getElementById('post-caption').value = '';
+      document.getElementById('post-cat').value = '';
+      document.getElementById('upload-preview').style.display = 'none';
+      document.getElementById('upload-placeholder').style.display = 'block';
+      await loadGalleryAdmin();
+    } catch(e) { alert('Error al publicar. Intenta de nuevo.'); }
+    btn.disabled = false; btn.textContent = 'Publicar 🌸';
+  };
+  reader.readAsDataURL(pendingMediaFile);
 }
 
 async function loadGalleryAdmin(){
-  const rows=await db('galeria?select=*&order=created_at.desc').catch(()=>[]);
-  document.getElementById('gallery-admin-grid').innerHTML=(rows||[]).map(m=>`
-    <div style="position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--rose-light);aspect-ratio:1">
+  const cat = document.getElementById('filter-cat')?.value || '';
+  let url = 'galeria?select=*&order=created_at.desc';
+  if (cat) url += `&titulo=eq.${encodeURIComponent(cat)}`;
+  const rows = await db(url).catch(() => []);
+  document.getElementById('posts-count').textContent = `${(rows||[]).length} publicaciones`;
+  document.getElementById('gallery-admin-grid').innerHTML = (rows||[]).map(m => {
+    const fecha = new Date(m.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+    return `<div class="post-card">
       ${m.tipo==='video'
-        ?`<video src="${m.url}" style="width:100%;height:100%;object-fit:cover"></video><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px">▶️</div>`
-        :`<img src="${m.url}" style="width:100%;height:100%;object-fit:cover">`}
-      <button onclick="delMedia(${m.id})" style="position:absolute;top:4px;right:4px;background:rgba(192,57,43,.85);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center">×</button>
-      <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(42,26,32,.6);color:#fff;font-size:10px;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.titulo||''}</div>
-    </div>`).join('');
+        ? `<video src="${m.url}" class="post-media" controls></video>`
+        : `<img src="${m.url}" class="post-media" alt="${m.titulo||''}">`}
+      <div class="post-body">
+        ${m.titulo ? `<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px">${m.titulo}</div>` : ''}
+        ${m.descripcion ? `<div class="post-caption">${m.descripcion}</div>` : '<div class="post-caption" style="color:var(--text-light);font-style:italic">Sin descripción</div>'}
+        <div class="post-date">📅 ${fecha}</div>
+        <div class="post-actions">
+          <button class="btn btn-o btn-sm" onclick="togglePostVisibility(${m.id}, ${!m.activo})">${m.activo ? '👁 Ocultar' : '👁 Mostrar'}</button>
+          <button class="btn-red" onclick="delMedia(${m.id})">🗑 Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function togglePostVisibility(id, visible){
+  await db(`galeria?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({activo: visible})});
+  await loadGalleryAdmin();
 }
 
 async function delMedia(id){
-  if(!confirm('¿Eliminar?'))return;
-  await db(`galeria?id=eq.${id}`,{method:'DELETE'});
-  loadGalleryAdmin();
+  if (!confirm('¿Eliminar esta publicación?')) return;
+  await db(`galeria?id=eq.${id}`, {method:'DELETE'});
+  await loadGalleryAdmin();
+}
+
+async function uploadLogo(input){
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const base64 = e.target.result;
+    await fetch(SUPA_URL+'/rest/v1/config?clave=eq.logo_url', {
+      method: 'PATCH',
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify({valor: base64})
+    });
+    showLogo(base64);
+    alert('✅ Logo guardado. Ya aparece en la página pública.');
+  };
+  reader.readAsDataURL(file);
+}
+
+function showLogo(src){
+  ['login-logo-img','sb-logo-img'].forEach(id=>{
+    const img = document.getElementById(id);
+    if (img) { img.src = src; img.style.display = 'block'; }
+  });
+  const ph1 = document.getElementById('login-logo-ph');
+  const ph2 = document.getElementById('sb-logo-ph');
+  if (ph1) ph1.style.display = 'none';
+  if (ph2) ph2.style.display = 'none';
+  const prev = document.getElementById('logo-preview');
+  if (prev) { prev.src = src; prev.style.display = 'block'; }
+  const placeholder = document.getElementById('logo-placeholder');
+  if (placeholder) placeholder.style.display = 'none';
 }
 
 // INIT
@@ -1278,9 +1386,10 @@ async function initApp(){
   await loadDashboard();
   await loadSvc();
   setInterval(checkNewCitas,30000);
+  loadGalleryAdmin();
   const today=new Date().toISOString().slice(0,10);
   ['nc-d','vt-dt','gs-dt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
-  loadGalleryAdmin();
+  
 }
 </script>
 </body>
