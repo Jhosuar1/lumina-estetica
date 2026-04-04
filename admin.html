@@ -596,28 +596,58 @@ tbody tr:hover{background:var(--rose-pale)}
 
 <!-- Nuevo servicio -->
 <div class="mo" id="m-nuevo-svc"><div class="mo-box">
-  <div class="mo-title">Servicio</div>
+  <div class="mo-title">Servicio / Tratamiento</div>
   <input type="hidden" id="sv-id">
   <div class="fr">
     <div class="fg"><label>Ícono (emoji)</label><input type="text" id="sv-ic" placeholder="✨" maxlength="4"></div>
-    <div class="fg"><label>Nombre</label><input type="text" id="sv-nm" placeholder="Nombre del servicio"></div>
+    <div class="fg"><label>Nombre del tratamiento</label><input type="text" id="sv-nm" placeholder="Ej: Depilación Láser"></div>
   </div>
-  <div class="fg"><label>Descripción</label><textarea id="sv-dc" rows="2"></textarea></div>
+  <div class="fg"><label>Descripción general</label><textarea id="sv-dc" rows="2" placeholder="Breve descripción del tratamiento..."></textarea></div>
   <div class="fr">
-    <div class="fg"><label>Precio (COP)</label><input type="number" id="sv-pr" placeholder="0"></div>
-    <div class="fg"><label>Duración (min)</label><input type="number" id="sv-du" placeholder="60"></div>
+    <div class="fg"><label>Precio base (COP) — opcional</label><input type="number" id="sv-pr" placeholder="Si tiene precio único"></div>
+    <div class="fg"><label>Duración (min) — opcional</label><input type="number" id="sv-du" placeholder="60"></div>
   </div>
-  <div class="fg">
-    <label>Subcategorías (tipos de este servicio)</label>
+
+  <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-dark)">
+    <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px">
+      Categorías y precios detallados
+    </div>
+    <p style="font-size:12px;color:var(--text-light);margin-bottom:12px">
+      Agrega grupos de zonas/tipos con sus precios. Ej: "Facial" → Facial completo $60.000, Bigote $35.000
+    </p>
+
+    <!-- Agregar categoría -->
+    <div style="background:var(--cream);border:1px solid var(--rose-light);border-radius:6px;padding:14px;margin-bottom:12px">
+      <div class="fr">
+        <div class="fg"><label>Categoría / Zona</label><input type="text" id="zona-cat" placeholder="Ej: Facial, Brazos, Inferior..."></div>
+        <div class="fg"><label>Nombre del ítem</label><input type="text" id="zona-nom" placeholder="Ej: Facial completo"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>Precio (COP)</label><input type="number" id="zona-precio" placeholder="60000"></div>
+        <div class="fg" style="display:flex;align-items:flex-end">
+          <button class="btn btn-o" style="width:100%" onclick="addZona()">+ Agregar ítem</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de zonas agregadas -->
+    <div id="zonas-edit"></div>
+  </div>
+
+  <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-dark)">
+    <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">
+      Subcategorías (tipos de atención)
+    </div>
     <div style="display:flex;gap:6px;margin-bottom:8px">
-      <input type="text" id="sc-input" placeholder="Ej: Facial, Piernas completas…" style="flex:1;padding:9px 11px;border:1px solid var(--cream-dark);border-radius:4px;font-family:var(--font-b);font-size:12px;background:var(--cream);outline:none">
+      <input type="text" id="sc-input" placeholder="Ej: Con anestesia, Sin anestesia..." style="flex:1;padding:9px 11px;border:1px solid var(--cream-dark);border-radius:4px;font-family:var(--font-b);font-size:12px;background:var(--cream);outline:none">
       <button class="btn btn-o btn-sm" onclick="addSubcat()">+ Agregar</button>
     </div>
     <div class="subcats-list" id="subcats-edit"></div>
   </div>
+
   <div class="mo-actions">
     <button class="btn btn-o" onclick="closeMs()">Cancelar</button>
-    <button class="btn btn-p" onclick="saveSvc()">Guardar</button>
+    <button class="btn btn-p" onclick="saveSvc()">Guardar tratamiento</button>
   </div>
 </div></div>
 
@@ -898,18 +928,63 @@ function populateSvcSelect(){
     (svc?.subcategorias||[]).forEach(x=>{const o=document.createElement('option');o.value=x.nombre;o.textContent=x.nombre;sc.appendChild(o);});
   };
 }
+
 function editSvc(id){
-  const s=SVCS.find(x=>x.id===id);
-  document.getElementById('sv-id').value=id;
-  document.getElementById('sv-ic').value=s.icono||'';
-  document.getElementById('sv-nm').value=s.nombre;
-  document.getElementById('sv-dc').value=s.descripcion||'';
-  document.getElementById('sv-pr').value=s.precio||'';
-  document.getElementById('sv-du').value=s.duracion||'';
-  subcatsTemp=[...(s.subcategorias||[]).map(sc=>({nombre:sc.nombre,id:sc.id}))];
+  const s = SVCS.find(x => x.id === id);
+  document.getElementById('sv-id').value    = id;
+  document.getElementById('sv-ic').value    = s.icono || '';
+  document.getElementById('sv-nm').value    = s.nombre;
+  document.getElementById('sv-dc').value    = s.descripcion || '';
+  document.getElementById('sv-pr').value    = s.precio || '';
+  document.getElementById('sv-du').value    = s.duracion || '';
+  subcatsTemp = [...(s.subcategorias || []).map(sc => ({ nombre: sc.nombre, id: sc.id }))];
+  zonasTemp   = [...(s.zonas_servicio || []).map(z => ({ categoria: z.categoria, nombre: z.nombre, precio: z.precio, id: z.id }))];
   renderSubcatsEdit();
+  renderZonasEdit();
   openM('nuevo-svc');
 }
+
+
+let zonasTemp = [];
+
+function addZona(){
+  const cat   = document.getElementById('zona-cat').value.trim();
+  const nom   = document.getElementById('zona-nom').value.trim();
+  const precio = +document.getElementById('zona-precio').value || null;
+  if (!cat || !nom) { alert('Completa la categoría y el nombre del ítem.'); return; }
+  zonasTemp.push({ categoria: cat, nombre: nom, precio });
+  document.getElementById('zona-cat').value = '';
+  document.getElementById('zona-nom').value = '';
+  document.getElementById('zona-precio').value = '';
+  renderZonasEdit();
+}
+
+function renderZonasEdit(){
+  // Agrupar por categoría
+  const cats = {};
+  zonasTemp.forEach((z, i) => {
+    if (!cats[z.categoria]) cats[z.categoria] = [];
+    cats[z.categoria].push({ ...z, idx: i });
+  });
+  document.getElementById('zonas-edit').innerHTML = Object.entries(cats).map(([cat, items]) => `
+    <div style="margin-bottom:12px;background:var(--white);border:1px solid var(--rose-light);border-radius:6px;overflow:hidden">
+      <div style="background:var(--rose-pale);padding:8px 14px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--rose-dark)">${cat}</div>
+      ${items.map(item => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-top:1px solid var(--cream-dark)">
+          <span style="font-size:13px;color:var(--text-mid)">${item.nombre}</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-family:var(--font-d);font-size:16px;color:var(--green)">${item.precio ? '$'+Number(item.precio).toLocaleString('es-CO') : 'Consultar'}</span>
+            <button onclick="removeZona(${item.idx})" style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:16px">×</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function removeZona(idx){
+  zonasTemp.splice(idx, 1);
+  renderZonasEdit();
+}
+
 function renderSubcatsEdit(){
   document.getElementById('subcats-edit').innerHTML=subcatsTemp.map((sc,i)=>
     `<span class="subcat-chip">${sc.nombre}<button onclick="removeSubcat(${i})">×</button></span>`
@@ -924,19 +999,38 @@ function addSubcat(){
 }
 function removeSubcat(i){subcatsTemp.splice(i,1);renderSubcatsEdit();}
 async function saveSvc(){
-  const id=+document.getElementById('sv-id').value||null;
-  const data={icono:document.getElementById('sv-ic').value||'✨',nombre:document.getElementById('sv-nm').value.trim(),descripcion:document.getElementById('sv-dc').value,precio:+document.getElementById('sv-pr').value||null,duracion:+document.getElementById('sv-du').value||null,activo:true};
-  if(!data.nombre)return;
-  let svcId=id;
-  if(id){await db(`servicios?id=eq.${id}`,{method:'PATCH',body:JSON.stringify(data)});}
-  else{const r=await db('servicios',{method:'POST',body:JSON.stringify(data)});svcId=r?.[0]?.id;}
-  if(svcId){
-    await db(`subcategorias?servicio_id=eq.${svcId}`,{method:'DELETE'});
-    if(subcatsTemp.length){
-      await db('subcategorias',{method:'POST',body:JSON.stringify(subcatsTemp.map(sc=>({nombre:sc.nombre,servicio_id:svcId})))});
+  const id   = +document.getElementById('sv-id').value || null;
+  const data = {
+    icono:       document.getElementById('sv-ic').value || '✨',
+    nombre:      document.getElementById('sv-nm').value.trim(),
+    descripcion: document.getElementById('sv-dc').value,
+    precio:      +document.getElementById('sv-pr').value || null,
+    duracion:    +document.getElementById('sv-du').value || null,
+    activo:      true
+  };
+  if (!data.nombre) return;
+  let svcId = id;
+  if (id) {
+    await db(`servicios?id=eq.${id}`, { method:'PATCH', body:JSON.stringify(data) });
+  } else {
+    const r = await db('servicios', { method:'POST', body:JSON.stringify(data) });
+    svcId = r?.[0]?.id;
+  }
+  if (svcId) {
+    // Guardar subcategorías
+    await db(`subcategorias?servicio_id=eq.${svcId}`, { method:'DELETE' });
+    if (subcatsTemp.length) {
+      await db('subcategorias', { method:'POST', body:JSON.stringify(subcatsTemp.map(sc => ({ nombre:sc.nombre, servicio_id:svcId }))) });
+    }
+    // Guardar zonas de precios
+    await db(`zonas_servicio?servicio_id=eq.${svcId}`, { method:'DELETE' });
+    if (zonasTemp.length) {
+      await db('zonas_servicio', { method:'POST', body:JSON.stringify(zonasTemp.map((z, i) => ({ categoria:z.categoria, nombre:z.nombre, precio:z.precio||null, servicio_id:svcId, orden:i }))) });
     }
   }
-  document.getElementById('sv-id').value='';subcatsTemp=[];closeMs();await loadSvc();
+  document.getElementById('sv-id').value = '';
+  subcatsTemp = []; zonasTemp = [];
+  closeMs(); await loadSvc();
 }
 async function toggleSvc(id,v){await db(`servicios?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({activo:v})});}
 async function delSvc(id){if(!confirm('¿Eliminar servicio?'))return;await db(`servicios?id=eq.${id}`,{method:'DELETE'});await loadSvc();}
