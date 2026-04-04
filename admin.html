@@ -1136,20 +1136,38 @@ function changePass(){
 }
 
 // LOGO
-function uploadLogo(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{showLogo(e.target.result);};
+// LOGO
+async function uploadLogo(input){
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const base64 = e.target.result;
+    // Guardar en Supabase para que persista
+    await fetch(SUPA_URL+'/rest/v1/config?clave=eq.logo_url', {
+      method: 'PATCH',
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify({valor: base64})
+    });
+    showLogo(base64);
+    alert('✅ Logo guardado. Ya aparece en la página pública.');
+  };
   reader.readAsDataURL(file);
 }
+
 function showLogo(src){
   ['login-logo-img','sb-logo-img'].forEach(id=>{
-    const img=document.getElementById(id);img.src=src;img.style.display='block';
+    const img = document.getElementById(id);
+    if (img) { img.src = src; img.style.display = 'block'; }
   });
-  document.getElementById('login-logo-ph').style.display='none';
-  document.getElementById('sb-logo-ph').style.display='none';
-  const prev=document.getElementById('logo-preview');prev.src=src;prev.style.display='block';
-  document.getElementById('logo-placeholder').style.display='none';
+  const ph1 = document.getElementById('login-logo-ph');
+  const ph2 = document.getElementById('sb-logo-ph');
+  if (ph1) ph1.style.display = 'none';
+  if (ph2) ph2.style.display = 'none';
+  const prev = document.getElementById('logo-preview');
+  if (prev) { prev.src = src; prev.style.display = 'block'; }
+  const placeholder = document.getElementById('logo-placeholder');
+  if (placeholder) placeholder.style.display = 'none';
 }
 
   
