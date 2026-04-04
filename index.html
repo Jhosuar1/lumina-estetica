@@ -642,22 +642,39 @@ async function loadFeed(){
 async function loadZonasServicio(svcId, svcNombre){
   try{
     const zonas = await supaFetch(`zonas_servicio?servicio_id=eq.${svcId}&select=*&order=orden`);
-    if(!zonas || !zonas.length) return;
+    if (!zonas || !zonas.length) {
+      document.getElementById('reservar').scrollIntoView({behavior:'smooth'});
+      return;
+    }
     const cats = {};
     zonas.forEach(z => { if(!cats[z.categoria]) cats[z.categoria]=[]; cats[z.categoria].push(z); });
-    const html = Object.entries(cats).map(([cat,items]) => `
-      <div style="margin-bottom:20px">
-        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;border-bottom:1px solid var(--rose-light);padding-bottom:6px">${cat}</div>
-        ${items.map(z => `
-          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--cream-dark);font-size:13px">
-            <span style="color:var(--text-mid)">${z.nombre}</span>
-            <span style="font-family:var(--font-d);font-size:16px;color:var(--rose-dark)">${z.precio ? '$'+Number(z.precio).toLocaleString('es-CO') : 'Consultar'}</span>
+
+    const total = zonas.length;
+    const min   = Math.min(...zonas.map(z=>z.precio).filter(Boolean));
+
+    const html = `
+      <div style="text-align:center;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--rose-light)">
+        <div style="font-size:12px;color:var(--text-light);letter-spacing:1px">${total} opciones disponibles · Desde $${Number(min).toLocaleString('es-CO')}</div>
+      </div>
+      <div style="text-align:left;max-height:55vh;overflow-y:auto;padding-right:4px">
+        ${Object.entries(cats).map(([cat, items]) => `
+          <div style="margin-bottom:18px">
+            <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--rose-light)">${cat}</div>
+            ${items.map(z => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--cream-dark)">
+                <span style="font-size:13px;color:var(--text-mid)">${z.nombre}</span>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-family:var(--font-d);font-size:17px;color:var(--rose-dark);font-weight:400">${z.precio ? '$'+Number(z.precio).toLocaleString('es-CO') : 'Consultar'}</span>
+                  <a href="#reservar" onclick="closeModal()" style="font-size:10px;background:var(--rose-dark);color:#fff;padding:4px 10px;border-radius:2px;text-decoration:none;letter-spacing:1px;white-space:nowrap">Agendar</a>
+                </div>
+              </div>`).join('')}
           </div>`).join('')}
-      </div>`).join('');
-    document.getElementById('modal-text').innerHTML = `<div style="text-align:left;max-height:55vh;overflow-y:auto;padding-right:4px">${html}</div>`;
-    document.querySelector('#modal h3').textContent = svcNombre + ' · Precios por sesión';
+      </div>`;
+
+    document.getElementById('modal-text').innerHTML = html;
+    document.querySelector('#modal h3').textContent = svcNombre;
     document.getElementById('modal').classList.add('active');
-  }catch(e){}
+  } catch(e) {}
 }
 
 // ── INIT ──
@@ -711,37 +728,82 @@ async function loadPromo() {
 // ── SERVICES RENDER ──
 function renderServices() {
   const grid = document.getElementById('services-grid');
-  const sel = document.getElementById('service-select');
+  const sel  = document.getElementById('service-select');
   if (!SERVICES.length) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-light)">Próximamente disponibles nuestros servicios 🌸</div>';
     return;
   }
   grid.innerHTML = '';
-  sel.innerHTML = '<option value="">Selecciona un tratamiento</option>';
+  sel.innerHTML  = '<option value="">Selecciona un tratamiento</option>';
+
   SERVICES.forEach(s => {
-    const price = s.precio ? '$' + Number(s.precio).toLocaleString('es-CO') : 'Consultar precio';
-    const dur = s.duracion ? s.duracion + ' min' : 'Duración variable';
-    const subcats = s.subcategorias || [];
-    const subHTML = subcats.length ? `<div class="service-subcats">${subcats.map(sc=>`<span class="subcat-tag">${sc.nombre}</span>`).join('')}</div>` : '';
-    const card = document.createElement('div');
-    card.className = 'service-card';
-    const hasZones = s.zonas_servicio && s.zonas_servicio.length > 0;
-    const btnText = hasZones ? 'Ver precios →' : 'Agendar ahora →';
+    const zonas    = s.zonas_servicio || [];
+    const subcats  = s.subcategorias  || [];
+    const hasZones = zonas.length > 0;
+
+    // Agrupar zonas por categoría para mostrar en la tarjeta
+    const cats = {};
+    zonas.forEach(z => {
+      if (!cats[z.categoria]) cats[z.categoria] = [];
+      cats[z.categoria].push(z);
+    });
+
+    // Precio mínimo para mostrar "Desde $X"
+    const precios = zonas.map(z => z.precio).filter(Boolean);
+    const precioMin = precios.length ? Math.min(...precios) : s.precio;
+    const precioHTML = precioMin
+      ? `<span style="color:var(--gold);font-family:var(--font-d);font-size:18px">Desde $${Number(precioMin).toLocaleString('es-CO')}</span>`
+      : `<span style="color:var(--text-light);font-size:14px">Consultar precio</span>`;
+
+    // Preview de zonas (máximo 3 ítems)
+    const previewItems = zonas.slice(0, 3).map(z =>
+      `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--cream-dark);font-size:12px">
+        <span style="color:var(--text-mid)">${z.nombre}</span>
+        <span style="color:var(--rose-dark);font-family:var(--font-d);font-size:14px">${z.precio ? '$'+Number(z.precio).toLocaleString('es-CO') : '—'}</span>
+      </div>`
+    ).join('');
+
+    const masItems = zonas.length > 3
+      ? `<div style="font-size:11px;color:var(--text-light);margin-top:6px;text-align:right">+${zonas.length-3} más → Ver todos los precios</div>`
+      : '';
+
+    const subcatHTML = subcats.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin:10px 0">
+          ${subcats.map(sc => `<span style="font-size:10px;padding:3px 9px;background:var(--rose-pale);color:var(--rose-dark);border-radius:20px;border:1px solid var(--rose-light)">${sc.nombre}</span>`).join('')}
+        </div>`
+      : '';
+
+    const btnText  = hasZones ? 'Ver todos los precios →' : 'Agendar ahora →';
     const btnClick = hasZones
-      ? `loadZonasServicio(${s.id}, '${s.nombre.replace(/'/g, '')}')`
+      ? `loadZonasServicio(${s.id}, '${s.nombre.replace(/'/g,'')}')`
       : `document.getElementById('reservar').scrollIntoView({behavior:'smooth'})`;
 
+    const card = document.createElement('div');
+    card.className = 'service-card';
     card.innerHTML = `
-      <span class="service-icon">${s.icono || '✨'}</span>
-      <div class="service-name">${s.nombre}</div>
-      <p class="service-desc">${s.descripcion || ''}</p>
-      ${subHTML}
-      <div class="service-price">${price}</div>
-      <div class="service-duration">${dur}</div>
-      <button class="service-btn" onclick="${btnClick}">${btnText}</button>`;
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:28px">${s.icono || '✨'}</span>
+        ${s.duracion ? `<span style="font-size:10px;letter-spacing:1px;color:var(--text-light);text-transform:uppercase;margin-top:6px">${s.duracion} min</span>` : ''}
+      </div>
+      <div style="font-family:var(--font-d);font-size:21px;color:var(--rose-dark);margin-bottom:6px">${s.nombre}</div>
+      <p style="font-size:13px;color:var(--text-light);line-height:1.6;margin-bottom:12px">${s.descripcion || ''}</p>
+      ${subcatHTML}
+      ${hasZones ? `
+        <div style="margin:12px 0;padding:10px;background:var(--cream);border-radius:4px;border:1px solid var(--cream-dark)">
+          ${previewItems}
+          ${masItems}
+        </div>` : ''}
+      <div style="margin-bottom:14px">${precioHTML}</div>
+      <div style="display:flex;gap:8px">
+        <button class="service-btn" onclick="${btnClick}">${btnText}</button>
+        <button class="service-btn" style="color:var(--rose-dark)" onclick="document.getElementById('reservar').scrollIntoView({behavior:'smooth'})">Agendar →</button>
+      </div>`;
     grid.appendChild(card);
+
+    // Agregar al select de reservas
     const opt = document.createElement('option');
-    opt.value = s.id; opt.textContent = s.nombre + (s.precio ? ' — $' + Number(s.precio).toLocaleString('es-CO') : '');
+    opt.value = s.id;
+    opt.textContent = s.nombre + (precioMin ? ' — Desde $'+Number(precioMin).toLocaleString('es-CO') : '');
     sel.appendChild(opt);
   });
 }
