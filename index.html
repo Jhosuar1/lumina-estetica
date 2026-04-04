@@ -280,7 +280,10 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
 
 <!-- NAV -->
 <nav id="navbar">
-  <a href="#inicio" class="nav-logo">LÚM<span>I</span>NA</a>
+  <a href="#inicio" class="nav-logo" style="display:flex;align-items:center;gap:10px">
+    <img id="site-logo" style="display:none;height:36px;width:36px;border-radius:50%;object-fit:contain" alt="Logo LÚMINA">
+    LÚM<span>I</span>NA
+  </a>
   <ul class="nav-links">
     <li><a href="#servicios">Servicios</a></li>
     <li><a href="#reservar">Reservar</a></li>
@@ -547,9 +550,16 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-icon">🌸</div>
-    <h3>¡Cita confirmada!</h3>
+    <h3>¡Cita registrada!</h3>
     <p id="modal-text"></p>
-    <button class="modal-close" onclick="closeModal()">Perfecto, gracias</button>
+    <div style="background:var(--rose-pale);border:1px solid var(--rose-light);border-radius:6px;padding:16px;margin:16px 0;text-align:left">
+      <p style="font-size:12px;color:var(--text-mid);margin-bottom:10px">📲 <strong>¿Deseas confirmar tu cita por WhatsApp?</strong><br>Te pondrás en contacto directo con LÚMINA para cualquier duda.</p>
+      <a id="wa-confirm-btn" href="#" target="_blank"
+        style="display:block;background:#25D366;color:#fff;text-align:center;padding:12px;border-radius:4px;text-decoration:none;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--font-b)">
+        💬 Confirmar por WhatsApp
+      </a>
+    </div>
+    <button class="modal-close" onclick="closeModal()">Ya está, gracias</button>
   </div>
 </div>
 
@@ -609,10 +619,57 @@ async function loadZonasServicio(svcId, svcNombre){
     document.getElementById('modal').classList.add('active');
   }catch(e){}
 }
-  
+
+
+async function loadFeed(){
+  try{
+    const rows = await supaFetch('galeria?activo=eq.true&select=*&order=created_at.desc&limit=9');
+    const grid = document.getElementById('feed-grid');
+    if(!rows || !rows.length){ grid.style.display='none'; return; }
+    grid.innerHTML = rows.map(m => `
+      <div style="border-radius:8px;overflow:hidden;border:1px solid var(--rose-light);position:relative;background:var(--rose-pale)">
+        ${m.tipo==='video'
+          ? `<video src="${m.url}" controls style="width:100%;aspect-ratio:1;object-fit:cover;display:block"></video>`
+          : `<img src="${m.url}" alt="${m.titulo||'LÚMINA'}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" loading="lazy">`}
+        <div style="padding:12px">
+          ${m.titulo ? `<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:5px">${m.titulo}</div>` : ''}
+          ${m.descripcion ? `<p style="font-size:13px;color:var(--text-mid);line-height:1.6;margin:0">${m.descripcion}</p>` : ''}
+        </div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+async function loadZonasServicio(svcId, svcNombre){
+  try{
+    const zonas = await supaFetch(`zonas_servicio?servicio_id=eq.${svcId}&select=*&order=orden`);
+    if(!zonas || !zonas.length) return;
+    const cats = {};
+    zonas.forEach(z => { if(!cats[z.categoria]) cats[z.categoria]=[]; cats[z.categoria].push(z); });
+    const html = Object.entries(cats).map(([cat,items]) => `
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;border-bottom:1px solid var(--rose-light);padding-bottom:6px">${cat}</div>
+        ${items.map(z => `
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--cream-dark);font-size:13px">
+            <span style="color:var(--text-mid)">${z.nombre}</span>
+            <span style="font-family:var(--font-d);font-size:16px;color:var(--rose-dark)">${z.precio ? '$'+Number(z.precio).toLocaleString('es-CO') : 'Consultar'}</span>
+          </div>`).join('')}
+      </div>`).join('');
+    document.getElementById('modal-text').innerHTML = `<div style="text-align:left;max-height:55vh;overflow-y:auto;padding-right:4px">${html}</div>`;
+    document.querySelector('#modal h3').textContent = svcNombre + ' · Precios por sesión';
+    document.getElementById('modal').classList.add('active');
+  }catch(e){}
+}
+
 // ── INIT ──
 async function init() {
   await Promise.all([loadConfig(), loadServices(), loadPromo()]);
+try {
+  const logoRow = await supaFetch('config?clave=eq.logo_url&select=valor');
+  if (logoRow && logoRow[0] && logoRow[0].valor) {
+    const logoEl = document.getElementById('site-logo');
+    if (logoEl) { logoEl.src = logoRow[0].valor; logoEl.style.display = 'block'; }
+  }
+} catch(e) {}
   renderHours();
   renderCalendar();
   await loadFeed();
@@ -707,29 +764,24 @@ function onServiceChange() {
 
 // ── HOURS ──
 function renderHours() {
-  const dias = (CONFIG.dias_abiertos || '1,2,3,4,5,6').split(',').map(Number);
-  const open = CONFIG.hora_apertura || '08:00';
-  const close = CONFIG.hora_cierre || '18:00';
-  const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const diasAbiertos = (CONFIG.dias_abiertos || '1,2,3,4,5,6').split(',').map(Number);
   const list = document.getElementById('hours-list');
-  let ranges = [];
-  let start = null, prev = null;
-  for (let i = 0; i <= 7; i++) {
-    if (dias.includes(i)) { if (start === null) start = i; prev = i; }
-    else if (start !== null) { ranges.push([start, prev]); start = null; }
-  }
+  const DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   list.innerHTML = '';
-  if (!ranges.length) { list.innerHTML = '<div class="hours-row"><span>Por definir</span></div>'; return; }
-  ranges.forEach(([s, e]) => {
-    const row = document.createElement('div'); row.className = 'hours-row';
-    const label = s === e ? dayNames[s] : dayNames[s] + ' – ' + dayNames[e];
-    row.innerHTML = `<span>${label}</span><span class="time">${open} – ${close}</span>`;
+  diasAbiertos.forEach(d => {
+    const especial = CONFIG['horario_dia_'+d] ? JSON.parse(CONFIG['horario_dia_'+d]) : null;
+    const open  = especial ? especial.open  : (CONFIG.hora_apertura || '08:00');
+    const close = especial ? especial.close : (CONFIG.hora_cierre   || '19:00');
+    const row = document.createElement('div');
+    row.className = 'hours-row';
+    row.innerHTML = `<span>${DAY_NAMES[d]}</span><span class="time">${open} – ${close}</span>`;
     list.appendChild(row);
   });
-  const closed = [0,1,2,3,4,5,6].filter(d => !dias.includes(d));
-  if (closed.length) {
-    const row = document.createElement('div'); row.className = 'hours-row';
-    row.innerHTML = `<span>${closed.map(d=>dayNames[d]).join(', ')}</span><span class="time" style="color:var(--text-light)">Cerrado</span>`;
+  const cerrados = [0,1,2,3,4,5,6].filter(d => !diasAbiertos.includes(d));
+  if (cerrados.length) {
+    const row = document.createElement('div');
+    row.className = 'hours-row';
+    row.innerHTML = `<span>${cerrados.map(d=>DAY_NAMES[d]).join(', ')}</span><span class="time" style="color:var(--text-light)">Cerrado</span>`;
     list.appendChild(row);
   }
 }
@@ -860,6 +912,16 @@ async function submitBooking() {
       `${name}, tu cita de ${svc?.nombre || 'tratamiento'} el ${dateLabel} a las ${selectedSlot} ha sido registrada. Te enviaremos un recordatorio por WhatsApp 1 hora antes.`;
     document.getElementById('modal').classList.add('active');
     notifyAdmin(name, svc?.nombre || '', selectedDate, selectedSlot, phone);
+    const waMsg = encodeURIComponent(
+      `Hola LÚMINA! 🌸 Acabo de agendar una cita:\n\n` +
+      `👤 Nombre: ${name}\n` +
+      `✨ Servicio: ${svc?.nombre || ''}\n` +
+      `📅 Fecha: ${selectedDate}\n` +
+      `⏰ Hora: ${selectedSlot}\n` +
+      `💳 Pago: ${method}\n\n` +
+      `Quedo pendiente de la confirmación.`
+    );
+    document.getElementById('wa-confirm-btn').href = `https://wa.me/573213428678?text=${waMsg}`;
     selectedDate = null; selectedSlot = null;
     renderCalendar();
     document.getElementById('time-slots').classList.remove('visible');
