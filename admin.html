@@ -1356,54 +1356,33 @@ function previewMedia(input){
   reader.readAsDataURL(file);
 }
 
-async function publishPost() {
-  if (!selectedMedia) {
-    alert("Debes subir una imagen o video");
-    return;
-  }
-
-  const file = selectedMedia;
-  const fileName = `${Date.now()}_${file.name}`;
-  const folder = file.type.startsWith("video/") ? "videos" : "images";
-
-  try {
-    // 1. Subir a Supabase Storage (Crea un bucket llamado 'galeria' en tu panel)
-    const { data: storageData, error: storageError } = await supabase
-      .storage
-      .from('galeria') 
-      .upload(`${folder}/${fileName}`, file);
-
-    if (storageError) throw storageError;
-
-    // 2. Obtener la URL pública
-    const { data: { publicUrl } } = supabase
-      .storage
-      .from('galeria')
-      .getPublicUrl(`${folder}/${fileName}`);
-
-    // 3. Guardar en la tabla de Supabase (ya no en localStorage)
-    const newPost = {
-      media_url: publicUrl, // Solo guardamos el link
-      type: file.type.startsWith("video/") ? "video" : "image",
-      category: document.getElementById("post-cat").value,
-      caption: document.getElementById("post-caption").value,
-      created_at: new Date().toISOString()
-    };
-
-    const { error: dbError } = await supabase
-      .from('galeria') // Tu tabla de Supabase
-      .insert([newPost]);
-
-    if (dbError) throw dbError;
-
-    alert("¡Publicado con éxito!");
-    resetUpload();
-    loadGalleryAdmin(); // Esta función ahora debería leer de Supabase, no de localStorage
-
-  } catch (error) {
-    console.error("Error completo:", error);
-    alert("Error al subir: " + (error.message || "Servidor saturado"));
-  }
+async function publishPost(){
+  if(!pendingMediaFile){alert('Selecciona una imagen o video primero.');return;}
+  const caption=document.getElementById('post-caption').value.trim();
+  const cat=document.getElementById('post-cat').value;
+  const btn=event.target;
+  btn.disabled=true; btn.textContent='Publicando...';
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      await db('galeria',{method:'POST',body:JSON.stringify({
+        tipo: pendingMediaFile.type.startsWith('video/')?'video':'imagen',
+        url:  e.target.result,
+        titulo: cat||'Publicación',
+        descripcion: caption,
+        activo: true, orden: 0
+      })});
+      pendingMediaFile=null;
+      document.getElementById('media-input').value='';
+      document.getElementById('post-caption').value='';
+      document.getElementById('post-cat').value='';
+      document.getElementById('upload-preview').style.display='none';
+      document.getElementById('upload-placeholder').style.display='block';
+      await loadGalleryAdmin();
+    }catch(e){alert('Error al publicar. Intenta de nuevo.');}
+    btn.disabled=false; btn.textContent='Publicar 🌸';
+  };
+  reader.readAsDataURL(pendingMediaFile);
 }
 
 
