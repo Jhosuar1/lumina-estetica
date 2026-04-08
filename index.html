@@ -51,9 +51,8 @@ nav.scrolled{padding:12px 48px;box-shadow:0 4px 32px rgba(92,61,30,.08)}
 .mobile-menu a{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-mid);text-decoration:none;padding:10px 0;border-bottom:1px solid var(--rose-light)}
 
 /* PROMO BANNER */
-#promo-banner{display:none;background:linear-gradient(135deg,var(--rose-dark),var(--rose-deep));color:var(--white);text-align:center;padding:12px 24px;font-size:13px;letter-spacing:1px;position:relative;z-index:99}
+#promo-banner{display:none;background:linear-gradient(135deg,var(--rose-dark),var(--rose-deep));color:var(--white);text-align:center;padding:12px 24px;font-size:13px;letter-spacing:1px;position:fixed;top:0;left:0;right:0;z-index:101}
 #promo-banner.visible{display:block}
-#promo-banner strong{font-family:var(--font-d);font-size:17px;letter-spacing:2px}
 
 /* HERO */
 .hero{min-height:100vh;display:flex;align-items:center;padding:120px 48px 80px;position:relative;overflow:hidden}
@@ -387,7 +386,9 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
   <div class="section-title">Publicaciones <em>recientes</em></div>
 
   <!-- FEED TIPO RED SOCIAL -->
-  <div style="max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:20px" id="feed-grid"></div>
+  <div style="max-width:540px;margin:0 auto;height:800px;overflow-y:auto;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--gold) transparent">
+    <div style="display:flex;flex-direction:column;gap:20px" id="feed-grid"></div>
+  </div>
 
   <p style="text-align:center;margin-top:28px;font-size:12px;color:var(--text-light)">
     <a href="https://www.instagram.com/luminaesteticaintegral" target="_blank" style="color:var(--rose-deep);text-decoration:none;letter-spacing:1px">Ver más en @luminaesteticaintegral →</a>
@@ -645,6 +646,9 @@ async function loadPromo() {
     const b = document.getElementById('promo-banner');
     b.innerHTML = `<strong>🎉 ${PROMO.titulo}</strong> &nbsp;·&nbsp; ${PROMO.descripcion}`;
     b.classList.add('visible');
+    const bh = b.offsetHeight;
+    document.getElementById('navbar').style.top = bh + 'px';
+    document.body.style.paddingTop = (bh + 60) + 'px';
   }
 }
 
