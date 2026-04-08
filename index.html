@@ -135,6 +135,29 @@ section{padding:96px 48px}
 .feed-post:hover .feed-post-info{transform:translateY(0);opacity:1}
 .feed-post-cat{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-bottom:4px}
 .feed-post-caption{font-size:12px;color:#fff;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* FEED SOCIAL */
+.feed-card{background:var(--white);border:1px solid var(--cream-dark);border-radius:12px;overflow:hidden;transition:var(--tr)}
+.feed-card:hover{box-shadow:0 6px 24px rgba(92,61,30,.08)}
+.feed-card-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--cream-dark)}
+.feed-card-avatar{width:38px;height:38px;border-radius:50%;overflow:hidden;border:2px solid var(--gold);flex-shrink:0;background:var(--rose-pale)}
+.feed-card-avatar img{width:100%;height:100%;object-fit:cover}
+.feed-card-avatar-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:11px;color:var(--rose-dark)}
+.feed-card-name{font-size:13px;font-weight:500;color:var(--rose-dark)}
+.feed-card-meta{font-size:11px;color:var(--text-light)}
+.feed-card-badge{margin-left:auto;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--white);background:var(--gold);padding:3px 10px;border-radius:20px;white-space:nowrap}
+.feed-card-media{position:relative;overflow:hidden;cursor:pointer;background:#000}
+.feed-card-media img{width:100%;max-height:500px;object-fit:cover;display:block;transition:transform .4s}
+.feed-card-media:hover img{transform:scale(1.02)}
+.feed-card-media video{width:100%;max-height:500px;display:block;outline:none;background:#000}
+.feed-card-media-overlay{position:absolute;inset:0;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;opacity:0;transition:.25s}
+.feed-card-media:hover .feed-card-media-overlay{opacity:1}
+.feed-card-media-overlay span{font-size:48px}
+.feed-card-video-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:4px 10px;border-radius:12px;letter-spacing:1px}
+.feed-card-body{padding:14px 16px}
+.feed-card-caption{font-size:14px;color:var(--text-mid);line-height:1.65;white-space:pre-wrap;margin-bottom:8px}
+.feed-card-caption.truncated{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.feed-card-readmore{font-size:12px;color:var(--gold);cursor:pointer;background:none;border:none;font-family:var(--font-b);padding:0;margin-bottom:8px}
+.feed-card-date{font-size:11px;color:var(--text-light);letter-spacing:.5px}
 
 /* RECOMENDACIONES */
 .recomendaciones{background:var(--rose-pale)}
@@ -362,8 +385,11 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
 <section class="gallery" id="galeria">
   <div class="section-label">Nuestro trabajo</div>
   <div class="section-title">Publicaciones <em>recientes</em></div>
-  <div class="feed-grid" id="feed-grid"></div>
-  <p style="text-align:center;margin-top:24px;font-size:12px;color:var(--text-light)">
+
+  <!-- FEED TIPO RED SOCIAL -->
+  <div style="max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:20px" id="feed-grid"></div>
+
+  <p style="text-align:center;margin-top:28px;font-size:12px;color:var(--text-light)">
     <a href="https://www.instagram.com/luminaesteticaintegral" target="_blank" style="color:var(--rose-deep);text-decoration:none;letter-spacing:1px">Ver más en @luminaesteticaintegral →</a>
   </p>
 </section>
@@ -715,8 +741,9 @@ async function loadZonasServicio(svcId, svcNombre) {
 }
 function closePreciosModal() { document.getElementById('modal-precios').classList.remove('active'); }
 
-// ── FEED LIGHTBOX ──
+// ── FEED SOCIAL ──
 let FEED_POSTS = [], feedLbIdx = 0;
+
 function openFeedLightbox(idx){
   feedLbIdx=idx; renderFeedLightbox();
   document.getElementById('feed-lightbox').classList.add('open');
@@ -760,22 +787,59 @@ async function loadFeed(){
   try{
     const rows = await supaFetch('galeria?activo=eq.true&select=*&order=created_at.desc&limit=12');
     const grid = document.getElementById('feed-grid');
-    if(!rows||!rows.length){grid.parentElement.style.display='none';return;}
+    if(!rows||!rows.length){ grid.parentElement.style.display='none'; return; }
     FEED_POSTS = rows;
-    grid.innerHTML = rows.map((m,idx) => `
-      <div class="feed-post" onclick="openFeedLightbox(${idx})">
-        ${m.tipo==='video'
-          ? `<video muted loop playsinline preload="metadata" style="width:100%;aspect-ratio:1;object-fit:cover;display:block">
-               <source src="${m.url}" type="video/mp4">
-             </video>
-             <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;padding:3px 8px;border-radius:10px">🎬</div>`
-          : `<img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy">`}
-        <div class="feed-post-info">
-          ${m.titulo?`<div class="feed-post-cat">${m.titulo}</div>`:''}
-          ${m.descripcion?`<div class="feed-post-caption">${m.descripcion}</div>`:''}
+
+    // Cargar logo
+    let logoSrc = '';
+    try{
+      const lr = await supaFetch('config?clave=eq.logo_url&select=valor');
+      logoSrc = lr?.[0]?.valor||'';
+    }catch(e){}
+
+    const avatarHTML = logoSrc
+      ? `<img src="${logoSrc}" alt="logo">`
+      : `<div class="feed-card-avatar-ph">LÚM</div>`;
+
+    grid.innerHTML = rows.map((m, idx) => {
+      const fecha = new Date(m.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+      const hora  = new Date(m.created_at).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+      const cap   = m.descripcion||'';
+      const long  = cap.length > 150;
+      return `<div class="feed-card">
+        <div class="feed-card-header">
+          <div class="feed-card-avatar">${avatarHTML}</div>
+          <div>
+            <div class="feed-card-name">luminaesteticaintegral</div>
+            <div class="feed-card-meta">${fecha} · ${hora}</div>
+          </div>
+          ${m.titulo?`<span class="feed-card-badge">${m.titulo}</span>`:''}
         </div>
-      </div>`).join('');
+        <div class="feed-card-media" onclick="openFeedLightbox(${idx})">
+          ${m.tipo==='video'
+            ?`<video controls preload="metadata" style="width:100%;max-height:480px;display:block;background:#000">
+                <source src="${m.url}" type="video/mp4">
+              </video>
+              <div class="feed-card-video-badge">🎬 VIDEO</div>`
+            :`<img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy">
+              <div class="feed-card-media-overlay"><span>🔍</span></div>`}
+        </div>
+        <div class="feed-card-body">
+          ${cap
+            ?`<div class="feed-card-caption${long?' truncated':''}" id="fcap-${m.id}">${cap}</div>
+               ${long?`<button class="feed-card-readmore" onclick="expandFeedCap(this,'fcap-${m.id}')">Ver más</button>`:''}`
+            :''}
+          <div class="feed-card-date">🗓 ${fecha}</div>
+        </div>
+      </div>`;
+    }).join('');
   }catch(e){}
+}
+
+function expandFeedCap(btn, id){
+  const el=document.getElementById(id);
+  if(el) el.classList.remove('truncated');
+  btn.style.display='none';
 }
 
 // ── HOURS ──
