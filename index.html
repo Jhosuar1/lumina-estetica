@@ -374,12 +374,15 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
   <div class="section-label">Lo que ofrecemos</div>
   <div class="section-title">Nuestros <em>tratamientos</em></div>
   <div class="services-grid" id="services-grid">
-    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-light)">
-      <div style="font-size:24px;margin-bottom:8px">✨</div>Cargando tratamientos...
+    <div style="grid-column:1/-1;text-align:center;padding:60px 40px;color:var(--text-light)">
+      <div style="font-size:32px;margin-bottom:12px">✨</div>
+      <p style="font-family:var(--font-d);font-size:22px;color:var(--rose-dark);margin-bottom:8px">Próximamente</p>
+      <p style="font-size:13px">Estamos preparando nuestro catálogo de tratamientos.<br>Contáctanos para más información.</p>
+      <a href="https://wa.me/573213428678" target="_blank" style="display:inline-block;margin-top:20px;background:var(--rose-dark);color:#fff;padding:12px 28px;border-radius:2px;text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase">Consultar por WhatsApp</a>
     </div>
   </div>
 </section>
-
+  
 <!-- FEED / PUBLICACIONES -->
 <section class="gallery" id="galeria">
   <div class="section-label">Nuestro trabajo</div>
@@ -791,16 +794,10 @@ async function loadFeed(){
   try{
     const rows = await supaFetch('galeria?activo=eq.true&select=*&order=created_at.desc&limit=12');
     const grid = document.getElementById('feed-grid');
-    if(!rows||!rows.length){ grid.parentElement.style.display='none'; return; }
+    if(!rows||!rows.length){ grid.parentElement.parentElement.style.display='none'; return; }
     FEED_POSTS = rows;
-
-    // Cargar logo
-    let logoSrc = '';
-    try{
-      const lr = await supaFetch('config?clave=eq.logo_url&select=valor');
-      logoSrc = lr?.[0]?.valor||'';
-    }catch(e){}
-
+    let logoSrc='';
+    try{ const lr=await supaFetch('config?clave=eq.logo_url&select=valor'); logoSrc=lr?.[0]?.valor||''; }catch(e){}
     const avatarHTML = logoSrc
       ? `<img src="${logoSrc}" alt="logo">`
       : `<div class="feed-card-avatar-ph">LÚM</div>`;
@@ -809,7 +806,8 @@ async function loadFeed(){
       const fecha = new Date(m.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
       const hora  = new Date(m.created_at).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
       const cap   = m.descripcion||'';
-      const long  = cap.length > 150;
+      const long  = cap.length>150;
+      const mediaHTML = buildFeedMedia(m, idx);
       return `<div class="feed-card">
         <div class="feed-card-header">
           <div class="feed-card-avatar">${avatarHTML}</div>
@@ -819,19 +817,11 @@ async function loadFeed(){
           </div>
           ${m.titulo?`<span class="feed-card-badge">${m.titulo}</span>`:''}
         </div>
-        <div class="feed-card-media" onclick="openFeedLightbox(${idx})">
-          ${m.tipo==='video'
-            ?`<video controls preload="metadata" style="width:100%;max-height:480px;display:block;background:#000">
-                <source src="${m.url}" type="video/mp4">
-              </video>
-              <div class="feed-card-video-badge">🎬 VIDEO</div>`
-            :`<img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy">
-              <div class="feed-card-media-overlay"><span>🔍</span></div>`}
-        </div>
+        ${mediaHTML}
         <div class="feed-card-body">
           ${cap
             ?`<div class="feed-card-caption${long?' truncated':''}" id="fcap-${m.id}">${cap}</div>
-               ${long?`<button class="feed-card-readmore" onclick="expandFeedCap(this,'fcap-${m.id}')">Ver más</button>`:''}`
+              ${long?`<button class="feed-card-readmore" onclick="expandFeedCap(this,'fcap-${m.id}')">Ver más</button>`:''}`
             :''}
           <div class="feed-card-date">🗓 ${fecha}</div>
         </div>
@@ -840,9 +830,74 @@ async function loadFeed(){
   }catch(e){}
 }
 
-function expandFeedCap(btn, id){
+function buildFeedMedia(m, idx){
+  if(m.tipo==='carrusel' && m.media_urls && m.media_urls.length){
+    const id='fcar-'+m.id;
+    return `<div style="position:relative;overflow:hidden;background:#000">
+      <div id="${id}" style="overflow:hidden">
+        <div class="car-track" style="display:flex;transition:transform .35s">
+          ${m.media_urls.map((url,i)=>`
+            <div style="min-width:100%">
+              ${(m.media_tipos||[])[i]==='video'
+                ?`<video src="${url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;background:#000;display:block;outline:none"></video>`
+                :`<img src="${url}" style="width:100%;max-height:480px;object-fit:cover;display:block;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
+            </div>`).join('')}
+        </div>
+      </div>
+      ${m.media_urls.length>1?`
+        <button onclick="carNav('${id}',-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
+        <button onclick="carNav('${id}',1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">›</button>
+        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px">
+          ${m.media_urls.map((_,i)=>`<div class="car-dot" data-car="${id}" data-i="${i}" style="width:7px;height:7px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.45)'};cursor:pointer" onclick="carNav('${id}',${i}-carPositions['${id}']||0)"></div>`).join('')}
+        </div>`:''}
+    </div>`;
+  }
+  if(m.tipo==='video_link'||m.url_externa){
+    const embed=getEmbedUrl(m.url_externa||m.url);
+    return embed
+      ?`<div style="position:relative;padding-bottom:56.25%;background:#000"><iframe src="${embed}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen allow="autoplay"></iframe></div>`
+      :`<video src="${m.url_externa||m.url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;background:#000;display:block;outline:none"></video>`;
+  }
+  if(m.tipo==='video'){
+    return `<div style="position:relative">
+      <video src="${m.url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;background:#000;display:block;outline:none"></video>
+      <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:4px 10px;border-radius:12px">🎬 VIDEO</div>
+    </div>`;
+  }
+  return `<div class="feed-card-media" onclick="openFeedLightbox(${idx})">
+    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy">
+    <div class="feed-card-media-overlay"><span>🔍</span></div>
+  </div>`;
+}
+
+function getEmbedUrl(url){
+  if(!url)return null;
+  let m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}?rel=0`;
+  m=url.match(/vimeo\.com\/(\d+)/);
+  if(m)return `https://player.vimeo.com/video/${m[1]}`;
+  m=url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+  if(m)return `https://drive.google.com/file/d/${m[1]}/preview`;
+  return null;
+}
+
+let carPositions={};
+function carNav(id,dir){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  const track=wrap.querySelector('.car-track');
+  const total=track.children.length;
+  const cur=carPositions[id]||0;
+  const next=(cur+dir+total)%total;
+  carPositions[id]=next;
+  track.style.transform=`translateX(-${next*100}%)`;
+  wrap.parentElement.querySelectorAll('.car-dot').forEach((d,i)=>{
+    d.style.background=i===next?'#fff':'rgba(255,255,255,.45)';
+  });
+}
+
+function expandFeedCap(btn,id){
   const el=document.getElementById(id);
-  if(el) el.classList.remove('truncated');
+  if(el)el.classList.remove('truncated');
   btn.style.display='none';
 }
 
