@@ -191,6 +191,11 @@ tbody tr:hover{background:var(--rose-pale)}
 .post-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--cream-dark)}
 .upload-zone{border:2px dashed var(--rose-light);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--cream)}
 .upload-zone:hover{border-color:var(--gold);background:var(--rose-pale)}
+.media-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.media-thumb{position:relative;width:80px;height:80px;border-radius:6px;overflow:hidden;border:2px solid var(--rose-light)}
+.media-thumb img,.media-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.media-thumb-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1}
+.media-thumb-type{position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:8px;padding:1px 5px;border-radius:8px}
 
 /* LIGHTBOX */
 #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9998;display:none;align-items:center;justify-content:center}
@@ -459,14 +464,20 @@ tbody tr:hover{background:var(--rose-pale)}
             <!-- Upload zone -->
             <div>
               <div class="upload-zone" id="upload-zone" onclick="document.getElementById('media-input').click()">
-                <div id="upload-preview" style="display:none;margin-bottom:12px"></div>
                 <div id="upload-placeholder">
                   <div style="font-size:36px;margin-bottom:8px">📷</div>
-                  <p style="font-size:13px;color:var(--text-mid)">Imagen o video</p>
-                  <p style="font-size:11px;color:var(--text-light);margin-top:4px">JPG · PNG · MP4</p>
+                  <p style="font-size:13px;color:var(--text-mid)">Imágenes o videos</p>
+                  <p style="font-size:11px;color:var(--text-light);margin-top:4px">Selecciona varios a la vez</p>
                 </div>
               </div>
-              <input type="file" id="media-input" accept="image/*,video/*" style="display:none" onchange="previewMedia(this)">
+              <div class="media-thumbs" id="media-thumbs"></div>
+              <input type="file" id="media-input" accept="image/*,video/*" multiple style="display:none" onchange="addMediaFiles(this)">
+              <!-- Link externo (YouTube, Drive, etc) -->
+              <div style="margin-top:12px">
+                <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">O pega un link de video</div>
+                <input type="url" id="video-link" placeholder="https://youtube.com/... o drive.google.com/..." style="width:100%;padding:9px 12px;border:1px solid var(--cream-dark);border-radius:6px;font-family:var(--font-b);font-size:12px;background:var(--cream);outline:none">
+                <div style="font-size:10px;color:var(--text-light);margin-top:4px">YouTube · Google Drive · Vimeo · URL directa</div>
+              </div>
             </div>
             <!-- Form -->
             <div>
@@ -483,9 +494,10 @@ tbody tr:hover{background:var(--rose-pale)}
               </div>
               <div class="fg">
                 <label>Descripción / Caption</label>
-                <textarea id="post-caption" rows="4" placeholder="Describe el resultado, el tratamiento o comparte un tip de belleza... ✨&#10;&#10;(Puedes usar emojis 🌸✨💆)"></textarea>
+                <textarea id="post-caption" rows="5" placeholder="Describe el resultado, el tratamiento o comparte un tip... ✨"></textarea>
               </div>
               <button class="btn btn-p" style="width:100%;padding:13px" onclick="publishPost()">Publicar 🌸</button>
+              <p style="font-size:11px;color:var(--text-light);margin-top:8px;text-align:center">Puedes subir varias imágenes — se verán como carrusel</p>
             </div>
           </div>
         </div>
@@ -611,7 +623,20 @@ tbody tr:hover{background:var(--rose-pale)}
   <div class="fg"><label>Descripción general</label><textarea id="sv-dc" rows="2" placeholder="Breve descripción..."></textarea></div>
   <div class="fr">
     <div class="fg"><label>Precio base (opcional)</label><input type="number" id="sv-pr" placeholder="Si tiene precio único"></div>
-    <div class="fg"><label>Duración (min, opcional)</label><input type="number" id="sv-du" placeholder="60"></div>
+    <div class="fg">
+      <label>Duración (min) — define el intervalo de esta cita</label>
+      <select id="sv-du">
+        <option value="">Variable / A consultar</option>
+        <option value="15">15 min</option>
+        <option value="30">30 min</option>
+        <option value="45">45 min</option>
+        <option value="60">1 hora</option>
+        <option value="90">1.5 horas</option>
+        <option value="120">2 horas</option>
+        <option value="150">2.5 horas</option>
+        <option value="180">3 horas</option>
+      </select>
+    </div>
   </div>
   <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-dark)">
     <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Carta de precios por zona</div>
@@ -1336,58 +1361,102 @@ function showLogo(src){
 }
 
 // ── PUBLICACIONES (feed tipo Instagram) ──
-let pendingMediaFile = null;
+// ── PUBLICACIONES MULTI-MEDIA ──
+let pendingFiles = []; // {file, base64, tipo}
 
-function previewMedia(input){
-  const file=input.files[0]; if(!file)return;
-  pendingMediaFile=file;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const preview=document.getElementById('upload-preview');
-    const placeholder=document.getElementById('upload-placeholder');
-    preview.style.display='block';
-    placeholder.style.display='none';
-    if(file.type.startsWith('video/')){
-      preview.innerHTML=`<video src="${e.target.result}" style="max-width:100%;max-height:220px;border-radius:8px" controls></video>`;
-    } else {
-      preview.innerHTML=`<img src="${e.target.result}" style="max-width:100%;max-height:220px;border-radius:8px;object-fit:contain">`;
-    }
-  };
-  reader.readAsDataURL(file);
+function addMediaFiles(input){
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingFiles.push({ file, base64: e.target.result, tipo: file.type.startsWith('video/')? 'video':'imagen' });
+      renderThumbs();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderThumbs(){
+  const container = document.getElementById('media-thumbs');
+  const ph = document.getElementById('upload-placeholder');
+  ph.style.display = pendingFiles.length ? 'none' : 'block';
+  container.innerHTML = pendingFiles.map((f,i) => `
+    <div class="media-thumb">
+      ${f.tipo==='video'
+        ? `<video src="${f.base64}" muted></video><span class="media-thumb-type">🎬</span>`
+        : `<img src="${f.base64}" alt="">`}
+      <button class="media-thumb-del" onclick="removePending(${i})">×</button>
+    </div>`).join('');
+}
+
+function removePending(idx){
+  pendingFiles.splice(idx,1);
+  renderThumbs();
 }
 
 async function publishPost(){
-  if(!pendingMediaFile){alert('Selecciona una imagen o video primero.');return;}
-  const caption=document.getElementById('post-caption').value.trim();
-  const cat=document.getElementById('post-cat').value;
-  const btn=event.target;
-  btn.disabled=true; btn.textContent='Publicando...';
-  const reader=new FileReader();
-  reader.onload=async e=>{
-    try{
-      await db('galeria',{method:'POST',body:JSON.stringify({
-        tipo: pendingMediaFile.type.startsWith('video/')?'video':'imagen',
-        url:  e.target.result,
+  const caption   = document.getElementById('post-caption').value.trim();
+  const cat       = document.getElementById('post-cat').value;
+  const videoLink = document.getElementById('video-link').value.trim();
+  const btn       = event.target;
+
+  if (!pendingFiles.length && !videoLink) {
+    alert('Selecciona al menos una imagen/video o pega un link.');
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Publicando...';
+
+  try {
+    if (videoLink) {
+      // Publicación con link externo
+      await db('galeria', {method:'POST', body:JSON.stringify({
+        tipo: 'video_link',
+        url:  videoLink,
+        url_externa: videoLink,
         titulo: cat||'Publicación',
         descripcion: caption,
         activo: true, orden: 0
       })});
-      pendingMediaFile=null;
-      document.getElementById('media-input').value='';
-      document.getElementById('post-caption').value='';
-      document.getElementById('post-cat').value='';
-      document.getElementById('upload-preview').style.display='none';
-      document.getElementById('upload-placeholder').style.display='block';
-      await loadGalleryAdmin();
-    }catch(e){alert('Error al publicar. Intenta de nuevo.');}
-    btn.disabled=false; btn.textContent='Publicar 🌸';
-  };
-  reader.readAsDataURL(pendingMediaFile);
+    } else if (pendingFiles.length === 1) {
+      // Una sola imagen/video — comportamiento normal
+      await db('galeria', {method:'POST', body:JSON.stringify({
+        tipo:        pendingFiles[0].tipo,
+        url:         pendingFiles[0].base64,
+        titulo:      cat||'Publicación',
+        descripcion: caption,
+        activo:      true, orden: 0
+      })});
+    } else {
+      // Múltiples archivos → carrusel
+      const urls  = pendingFiles.map(f => f.base64);
+      const tipos = pendingFiles.map(f => f.tipo);
+      await db('galeria', {method:'POST', body:JSON.stringify({
+        tipo:        'carrusel',
+        url:         pendingFiles[0].base64, // primera como thumbnail
+        media_urls:  urls,
+        media_tipos: tipos,
+        titulo:      cat||'Publicación',
+        descripcion: caption,
+        activo:      true, orden: 0
+      })});
+    }
+
+    // Limpiar
+    pendingFiles = [];
+    document.getElementById('media-input').value = '';
+    document.getElementById('post-caption').value = '';
+    document.getElementById('post-cat').value = '';
+    document.getElementById('video-link').value = '';
+    document.getElementById('media-thumbs').innerHTML = '';
+    document.getElementById('upload-placeholder').style.display = 'block';
+    await loadGalleryAdmin();
+  } catch(e) {
+    alert('Error al publicar: '+e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Publicar 🌸';
 }
-
-
-let GALLERY_POSTS = [];
-let lightboxIdx = 0;
 
 async function loadGalleryAdmin(){
   const cat = document.getElementById('filter-cat')?.value||'';
@@ -1400,14 +1469,14 @@ async function loadGalleryAdmin(){
   const logoSrc = logoRow?.[0]?.valor||'';
   const avatarHTML = logoSrc
     ? `<img src="${logoSrc}" alt="logo">`
-    : `<div style="width:100%;height:100%;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:10px;color:var(--rose-dark)">LÚM</div>`;
+    : `<div class="feed-card-avatar-ph">LÚM</div>`;
 
   document.getElementById('gallery-admin-grid').innerHTML = GALLERY_POSTS.map((m, idx) => {
     const fecha = new Date(m.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
     const hora  = new Date(m.created_at).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
     const cap   = m.descripcion||'';
     const long  = cap.length > 120;
-    const capShort = long ? cap.slice(0,120)+'...' : cap;
+    const mediaHTML = buildMediaHTML(m, true);
     return `<div class="post-card" id="post-${m.id}">
       <div class="post-header">
         <div class="post-avatar">${avatarHTML}</div>
@@ -1417,24 +1486,13 @@ async function loadGalleryAdmin(){
         </div>
         ${m.titulo?`<span class="post-cat-badge">${m.titulo}</span>`:''}
       </div>
-      <div class="post-media-wrap" onclick="openLightbox(${idx})">
-        ${m.tipo==='video'
-          ? `<video class="post-media" preload="metadata" style="max-height:400px;width:100%;background:#000">
-               <source src="${m.url}" type="video/mp4">
-               Tu navegador no soporta video.
-             </video>
-             <div class="post-type-badge">🎬 VIDEO</div>
-             <div class="post-media-overlay"><span>▶</span></div>`
-          : `<img src="${m.url}" class="post-media square" alt="${m.titulo||''}">
-             <div class="post-media-overlay"><span>🔍</span></div>`}
-        ${!m.activo?`<div class="post-hidden-badge">👁 Oculta</div>`:''}
-      </div>
+      ${mediaHTML}
       <div class="post-body">
-        ${cap ? `<div class="post-caption${long?' truncated':''}" id="cap-${m.id}">${capShort}</div>
+        ${cap?`<div class="post-caption${long?' truncated':''}" id="cap-${m.id}">${long?cap.slice(0,120)+'...':cap}</div>
           ${long?`<button class="post-read-more" onclick="expandCaption(${m.id},'${cap.replace(/'/g,'&#39;').replace(/\n/g,'\\n')}')">Ver más</button>`:''}` 
-          : `<div class="post-caption" style="color:var(--text-light);font-style:italic">Sin descripción</div>`}
+          :'<div class="post-caption" style="color:var(--text-light);font-style:italic">Sin descripción</div>'}
         <div class="post-date-row">
-          <span class="post-date">❤️ ${fecha}</span>
+          <span class="post-date">🗓 ${fecha}</span>
           <span style="font-size:11px;color:${m.activo?'var(--green)':'var(--text-light)'}">● ${m.activo?'Visible':'Oculta'}</span>
         </div>
         <div class="post-actions">
@@ -1446,18 +1504,109 @@ async function loadGalleryAdmin(){
   }).join('');
 }
 
-function expandCaption(id, fullText){
-  const el = document.getElementById('cap-'+id);
-  if(el){ el.classList.remove('truncated'); el.textContent=fullText.replace(/\\n/g,'\n'); }
-  event.target.style.display='none';
+function buildMediaHTML(m, isAdmin=false){
+  const clickFn = isAdmin ? `openLightbox(${GALLERY_POSTS.indexOf(m)})` : `openFeedLightbox(${GALLERY_POSTS.indexOf(m)})`;
+  if (m.tipo === 'carrusel' && m.media_urls && m.media_urls.length) {
+    const id = 'car-'+m.id;
+    return `<div class="post-media-wrap" style="position:relative">
+      <div id="${id}" style="overflow:hidden">
+        <div class="car-track" style="display:flex;transition:transform .35s">
+          ${m.media_urls.map((url,i) => `
+            <div style="min-width:100%;position:relative">
+              ${(m.media_tipos||[])[i]==='video'
+                ? `<video src="${url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;display:block;background:#000;outline:none"></video>`
+                : `<img src="${url}" style="width:100%;max-height:480px;object-fit:cover;display:block;cursor:pointer" onclick="openLightboxAt(${GALLERY_POSTS.indexOf(m)},${i})">`}
+            </div>`).join('')}
+        </div>
+      </div>
+      ${m.media_urls.length>1?`
+        <button onclick="carNav('${id}',-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
+        <button onclick="carNav('${id}',1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">›</button>
+        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px">
+          ${m.media_urls.map((_,i)=>`<div class="car-dot" data-car="${id}" data-i="${i}" style="width:7px;height:7px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.45)'};cursor:pointer" onclick="carGoTo('${id}',${i})"></div>`).join('')}
+        </div>`:''}
+      ${!m.activo?`<div class="post-hidden-badge">👁 Oculta</div>`:''}
+    </div>`;
+  }
+  if (m.tipo === 'video_link' || m.url_externa) {
+    const src = getEmbedUrl(m.url_externa||m.url);
+    return src
+      ? `<div style="position:relative;padding-bottom:56.25%;background:#000">
+           <iframe src="${src}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe>
+         </div>`
+      : `<video src="${m.url_externa||m.url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;background:#000;display:block;outline:none"></video>`;
+  }
+  if (m.tipo === 'video') {
+    return `<div class="post-media-wrap">
+      <video src="${m.url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;display:block;background:#000;outline:none"></video>
+      <div class="post-type-badge">🎬 VIDEO</div>
+      ${!m.activo?`<div class="post-hidden-badge">👁 Oculta</div>`:''}
+    </div>`;
+  }
+  // imagen normal
+  return `<div class="post-media-wrap" onclick="${clickFn}">
+    <img src="${m.url}" class="post-media square" alt="${m.titulo||''}">
+    <div class="post-media-overlay"><span>🔍</span></div>
+    ${!m.activo?`<div class="post-hidden-badge">👁 Oculta</div>`:''}
+  </div>`;
 }
 
-// ── LIGHTBOX ──
-function openLightbox(idx){
-  lightboxIdx = idx;
-  renderLightbox();
+function getEmbedUrl(url){
+  if(!url) return null;
+  // YouTube
+  let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if(m) return `https://www.youtube.com/embed/${m[1]}?rel=0`;
+  // Vimeo
+  m = url.match(/vimeo\.com\/(\d+)/);
+  if(m) return `https://player.vimeo.com/video/${m[1]}`;
+  // Google Drive
+  m = url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+  if(m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  return null;
+}
+
+// Carrusel navegación
+let carPositions = {};
+function carNav(id, dir){
+  const wrap = document.getElementById(id);
+  if(!wrap) return;
+  const track = wrap.querySelector('.car-track');
+  const total = track.children.length;
+  const cur = carPositions[id]||0;
+  const next = (cur+dir+total)%total;
+  carPositions[id]=next;
+  track.style.transform=`translateX(-${next*100}%)`;
+  wrap.querySelectorAll('.car-dot').forEach((d,i)=>{
+    d.style.background = i===next?'#fff':'rgba(255,255,255,.45)';
+  });
+}
+function carGoTo(id, idx){
+  carPositions[id]=idx;
+  const wrap=document.getElementById(id);
+  if(!wrap)return;
+  const track=wrap.querySelector('.car-track');
+  track.style.transform=`translateX(-${idx*100}%)`;
+  wrap.querySelectorAll('.car-dot').forEach((d,i)=>{
+    d.style.background=i===idx?'#fff':'rgba(255,255,255,.45)';
+  });
+}
+
+// Lightbox con índice de carrusel
+function openLightboxAt(postIdx, mediaIdx){
+  lightboxIdx=postIdx;
+  renderLightbox(mediaIdx);
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow='hidden';
+}
+
+async function togglePostVisibility(id, visible){
+  await db(`galeria?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({activo:visible})});
+  await loadGalleryAdmin();
+}
+async function delMedia(id){
+  if(!confirm('¿Eliminar esta publicación?'))return;
+  await db(`galeria?id=eq.${id}`,{method:'DELETE'});
+  await loadGalleryAdmin();
 }
 function closeLightbox(){
   document.getElementById('lightbox').classList.remove('open');
@@ -1469,42 +1618,42 @@ function lightboxNav(dir){
   lightboxIdx = (lightboxIdx + dir + GALLERY_POSTS.length) % GALLERY_POSTS.length;
   renderLightbox();
 }
-function renderLightbox(){
+function renderLightbox(mediaIdx=0){
   const m = GALLERY_POSTS[lightboxIdx];
   if(!m) return;
   const img = document.getElementById('lightbox-img');
   const vid = document.getElementById('lightbox-video');
-  if(m.tipo==='video'){
-    img.style.display='none';
-    vid.style.display='block';
-    vid.src = m.url;
-    vid.load();
+  vid.pause(); vid.src=''; vid.style.display='none';
+  img.style.display='none';
+
+  if (m.tipo==='carrusel' && m.media_urls?.length) {
+    const url  = m.media_urls[mediaIdx]||m.media_urls[0];
+    const tipo = (m.media_tipos||[])[mediaIdx]||'imagen';
+    if(tipo==='video'){
+      vid.src=url; vid.style.display='block'; vid.load();
+    } else {
+      img.src=url; img.style.display='block';
+    }
+  } else if (m.tipo==='video_link'||m.url_externa) {
+    const embed = getEmbedUrl(m.url_externa||m.url);
+    if(embed){
+      document.getElementById('lightbox-media-wrap').innerHTML =
+        `<iframe src="${embed}" style="width:100%;height:75vh;border:none" allowfullscreen allow="autoplay"></iframe>`;
+      return;
+    } else {
+      vid.src=m.url_externa||m.url; vid.style.display='block'; vid.load();
+    }
+  } else if(m.tipo==='video'){
+    vid.src=m.url; vid.style.display='block'; vid.load();
   } else {
-    vid.pause(); vid.src=''; vid.style.display='none';
-    img.style.display='block';
-    img.src = m.url;
+    img.src=m.url; img.style.display='block';
   }
   document.getElementById('lightbox-cat').textContent     = m.titulo||'';
   document.getElementById('lightbox-caption').textContent = m.descripcion||'';
   document.getElementById('lightbox-prev').style.display  = GALLERY_POSTS.length>1?'flex':'none';
   document.getElementById('lightbox-next').style.display  = GALLERY_POSTS.length>1?'flex':'none';
 }
-document.addEventListener('keydown', e=>{
-  if(!document.getElementById('lightbox').classList.contains('open')) return;
-  if(e.key==='Escape') closeLightbox();
-  if(e.key==='ArrowLeft')  lightboxNav(-1);
-  if(e.key==='ArrowRight') lightboxNav(1);
-});
 
-async function togglePostVisibility(id,visible){
-  await db(`galeria?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({activo:visible})});
-  await loadGalleryAdmin();
-}
-async function delMedia(id){
-  if(!confirm('¿Eliminar esta publicación?'))return;
-  await db(`galeria?id=eq.${id}`,{method:'DELETE'});
-  await loadGalleryAdmin();
-}
 
 // ── NOTIFICATIONS ──
 async function checkNewCitas(){
