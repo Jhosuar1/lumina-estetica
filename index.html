@@ -374,11 +374,8 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
   <div class="section-label">Lo que ofrecemos</div>
   <div class="section-title">Nuestros <em>tratamientos</em></div>
   <div class="services-grid" id="services-grid">
-    <div style="grid-column:1/-1;text-align:center;padding:60px 40px;color:var(--text-light)">
-      <div style="font-size:32px;margin-bottom:12px">✨</div>
-      <p style="font-family:var(--font-d);font-size:22px;color:var(--rose-dark);margin-bottom:8px">Próximamente</p>
-      <p style="font-size:13px">Estamos preparando nuestro catálogo de tratamientos.<br>Contáctanos para más información.</p>
-      <a href="https://wa.me/573213428678" target="_blank" style="display:inline-block;margin-top:20px;background:var(--rose-dark);color:#fff;padding:12px 28px;border-radius:2px;text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase">Consultar por WhatsApp</a>
+    <div id="services-loading" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-light)">
+      <div style="font-size:24px;margin-bottom:8px">✨</div>Cargando tratamientos...
     </div>
   </div>
 </section>
@@ -1019,9 +1016,9 @@ document.querySelectorAll('.pay-method').forEach(el => {
 });
 
 function onServiceChange() {
-  const id = +document.getElementById('service-select').value;
+  const id  = +document.getElementById('service-select').value;
   const svc = SERVICES.find(s => s.id===id);
-  const group = document.getElementById('subcat-group');
+  const group  = document.getElementById('subcat-group');
   const subSel = document.getElementById('subcat-select');
   if (svc && svc.subcategorias && svc.subcategorias.length) {
     subSel.innerHTML = svc.subcategorias.map(sc=>`<option value="${sc.nombre}">${sc.nombre}</option>`).join('');
@@ -1030,6 +1027,16 @@ function onServiceChange() {
     group.classList.remove('visible');
     subSel.innerHTML = '';
   }
+  // Actualizar el intervalo del calendario según duración del servicio
+  if (svc && svc.duracion_minutos) {
+    CONFIG.intervalo = String(svc.duracion_minutos);
+  } else if (svc && svc.duracion) {
+    CONFIG.intervalo = String(svc.duracion);
+  } else {
+    CONFIG.intervalo = CONFIG._intervalo_global || '60';
+  }
+  // Re-renderizar slots si hay fecha seleccionada
+  if (selectedDate) renderSlots(selectedDate);
   checkConfirm();
 }
 
