@@ -538,16 +538,7 @@ tbody tr:hover{background:var(--rose-pale)}
         <div id="hours-config"></div>
         <button class="btn btn-p" style="margin-top:14px" onclick="saveConfig()">Guardar horarios</button>
       </div>
-
-      <div class="sett-sec">
-        <h3>Intervalo entre citas</h3>
-        <div class="fg" style="max-width:300px">
-          <label>Duración de cada intervalo</label>
-          <select id="cfg-interval"><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60" selected>1 hora</option><option value="90">1.5 horas</option></select>
-        </div>
-        <button class="btn btn-p" style="margin-top:8px" onclick="saveIntervalConfig()">Guardar intervalo</button>
-      </div>
-
+      
       <div class="sett-sec">
         <h3>Datos del negocio</h3>
         <div class="sg">
@@ -624,18 +615,22 @@ tbody tr:hover{background:var(--rose-pale)}
   <div class="fr">
     <div class="fg"><label>Precio base (opcional)</label><input type="number" id="sv-pr" placeholder="Si tiene precio único"></div>
     <div class="fg">
-      <label>Duración (min) — define el intervalo de esta cita</label>
+      <label>Duración por cita (define el intervalo en el calendario)</label>
       <select id="sv-du">
-        <option value="">Variable / A consultar</option>
+        <option value="">Sin duración fija</option>
         <option value="15">15 min</option>
         <option value="30">30 min</option>
         <option value="45">45 min</option>
         <option value="60">1 hora</option>
-        <option value="90">1.5 horas</option>
+        <option value="90">1 hora 30 min</option>
         <option value="120">2 horas</option>
-        <option value="150">2.5 horas</option>
+        <option value="150">2 horas 30 min</option>
         <option value="180">3 horas</option>
+        <option value="240">4 horas</option>
       </select>
+      <div style="font-size:11px;color:var(--text-light);margin-top:4px">
+          Esto controla cada cuánto se ofrecen horarios para este tratamiento en el calendario de reservas
+      </div>
     </div>
   </div>
   <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-dark)">
@@ -1406,56 +1401,76 @@ async function publishPost(){
     return;
   }
 
-  btn.disabled = true; btn.textContent = 'Publicando...';
+  btn.disabled = true; btn.textContent = 'Subiendo...';
 
   try {
     if (videoLink) {
-      // Publicación con link externo
-      await db('galeria', {method:'POST', body:JSON.stringify({
-        tipo: 'video_link',
-        url:  videoLink,
-        url_externa: videoLink,
-        titulo: cat||'Publicación',
-        descripcion: caption,
-        activo: true, orden: 0
-      })});
+      await dbPost({
+        tipo:'video_link', url:videoLink, url_externa:videoLink,
+        titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0,
+        media_urls:[], media_tipos:[]
+      });
+
     } else if (pendingFiles.length === 1) {
-      // Una sola imagen/video — comportamiento normal
-      await db('galeria', {method:'POST', body:JSON.stringify({
-        tipo:        pendingFiles[0].tipo,
-        url:         pendingFiles[0].base64,
-        titulo:      cat||'Publicación',
-        descripcion: caption,
-        activo:      true, orden: 0
-      })});
+      btn.textContent = 'Subiendo 1/1...';
+      const url = await uploadToStorage(pendingFiles[0].file);
+      await dbPost({
+        tipo:pendingFiles[0].tipo, url,
+        titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0,
+        media_urls:[], media_tipos:[]
+      });
+
     } else {
-      // Múltiples archivos → carrusel
-      const urls  = pendingFiles.map(f => f.base64);
-      const tipos = pendingFiles.map(f => f.tipo);
-      await db('galeria', {method:'POST', body:JSON.stringify({
-        tipo:        'carrusel',
-        url:         pendingFiles[0].base64, // primera como thumbnail
-        media_urls:  urls,
+      // Múltiples → carrusel
+      const urls=[], tipos=[];
+      for (let i=0; i<pendingFiles.length; i++){
+        btn.textContent = `Subiendo ${i+1}/${pendingFiles.length}...`;
+        const url = await uploadToStorage(pendingFiles[i].file);
+        urls.push(url); tipos.push(pendingFiles[i].tipo);
+      }
+      await dbPost({
+        tipo:'carrusel', url:urls[0],
+        media_urls: urls,
         media_tipos: tipos,
-        titulo:      cat||'Publicación',
-        descripcion: caption,
-        activo:      true, orden: 0
-      })});
+        titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0
+      });
     }
 
     // Limpiar
-    pendingFiles = [];
-    document.getElementById('media-input').value = '';
-    document.getElementById('post-caption').value = '';
-    document.getElementById('post-cat').value = '';
-    document.getElementById('video-link').value = '';
-    document.getElementById('media-thumbs').innerHTML = '';
-    document.getElementById('upload-placeholder').style.display = 'block';
+    pendingFiles.forEach(f=>URL.revokeObjectURL(f.previewUrl));
+    pendingFiles=[];
+    document.getElementById('media-input').value='';
+    document.getElementById('post-caption').value='';
+    document.getElementById('post-cat').value='';
+    document.getElementById('video-link').value='';
+    document.getElementById('media-thumbs').innerHTML='';
+    document.getElementById('upload-placeholder').style.display='block';
     await loadGalleryAdmin();
+
   } catch(e) {
-    alert('Error al publicar: '+e.message);
+    console.error(e);
+    alert('Error al publicar:\n'+e.message);
   }
-  btn.disabled = false; btn.textContent = 'Publicar 🌸';
+  btn.disabled=false; btn.textContent='Publicar 🌸';
+}
+
+// Función separada que maneja el POST a galería con arrays correctos
+async function dbPost(data){
+  const res = await fetch(SUPA_URL+'/rest/v1/galeria', {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer '+SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  return res.json().catch(()=>null);
 }
 
 async function loadGalleryAdmin(){
