@@ -944,38 +944,40 @@ function buildFeedMedia(m, idx){
 }
 
 function buildInlineVideo(url, vid_id){
-  return `<div class="feed-video-wrap" id="wrap-${vid_id}" onclick="toggleFeedVideo('${vid_id}')">
+  return `<div class="feed-video-wrap" id="wrap-${vid_id}">
     <video id="${vid_id}" src="${url}"
       autoplay muted loop playsinline preload="metadata"
       controlsList="nodownload nofullscreen noremoteplayback"
-      oncontextmenu="return false">
+      oncontextmenu="return false"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
     </video>
-    <!-- Icono play/pause central -->
-    <div class="feed-video-icon">▶</div>
-    <!-- Overlay inferior con badge y botón de sonido -->
+    <div class="feed-video-icon" id="icon-${vid_id}">▶</div>
     <div class="feed-video-overlay">
       <div class="feed-video-actions">
-        <span class="feed-video-badge">▶ video</span>
+        <span class="feed-video-badge">▶ VIDEO</span>
         <button class="feed-video-mute" id="mute-${vid_id}"
-          onclick="toggleMuteFeed('${vid_id}',event)">🔇 Sonido</button>
+          onclick="toggleMuteFeed('${vid_id}',event)">Sonido</button>
       </div>
     </div>
+    <div onclick="toggleFeedVideo('${vid_id}')"
+      style="position:absolute;inset:0;z-index:1"></div>
   </div>`;
 }
 
 function toggleFeedVideo(id){
-  const v   = document.getElementById(id);
+  const v    = document.getElementById(id);
   const wrap = document.getElementById('wrap-'+id);
-  const icon = wrap?.querySelector('.feed-video-icon');
+  const icon = document.getElementById('icon-'+id);
   if(!v) return;
   if(v.paused){
     v.play().catch(()=>{});
     wrap?.classList.remove('paused');
-    if(icon) icon.textContent = '▶';
+    // Ocultar ícono después de 800ms
+    if(icon){ icon.style.opacity='1'; setTimeout(()=>{ icon.style.opacity='0'; },800); }
   } else {
     v.pause();
     wrap?.classList.add('paused');
-    if(icon) icon.textContent = '▶';
+    if(icon){ icon.textContent='▶'; icon.style.opacity='1'; }
   }
 }
 
