@@ -123,8 +123,8 @@ section{padding:96px 48px}
 /* FEED */
 .gallery{background:var(--cream-dark)}
 /* Video feed — cuadrado, autoplay silencioso, limpio */
-.feed-video-wrap{position:relative;width:100%;aspect-ratio:1/1;background:#111;overflow:hidden;cursor:pointer}
-.feed-video-wrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.feed-video-wrap{position:relative;width:100%;padding-bottom:100%;background:#111;overflow:hidden;cursor:pointer}
+.feed-video-wrap video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
 .feed-video-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 50%);opacity:0;transition:.25s;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;pointer-events:none}
 .feed-video-wrap:hover .feed-video-overlay{opacity:1}
 .feed-video-actions{display:flex;align-items:center;justify-content:space-between;pointer-events:all}
