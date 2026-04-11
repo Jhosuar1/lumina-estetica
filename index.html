@@ -1011,19 +1011,19 @@ function carNav(id,dir){
   });
 }
 
-function carGoTo(id, idx){
-  const wrap = document.getElementById(id); if(!wrap) return;
-  const track = wrap.querySelector('.car-track');
-  const total = track.children.length;
-  carPositions[id] = idx;
-  track.style.transform = `translateX(-${idx*100}%)`;
-  for(let i=0; i<total; i++){
-    const dot = document.getElementById(`${id}-dot-${i}`);
-    if(dot) dot.style.background = i===idx ? '#fff' : 'rgba(255,255,255,.4)';
+function carGoTo(id, next){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  const track=wrap.querySelector('.car-track');
+  const total=track.children.length;
+  carPositions[id]=next;
+  track.style.transform=`translateX(-${next*100}%)`;
+  for(let i=0;i<total;i++){
+    const dot=document.getElementById(`${id}-dot-${i}`);
+    if(dot)dot.style.background=i===next?'#fff':'rgba(255,255,255,.35)';
   }
-  // Actualizar contador "1 / N"
-  const counter = wrap.parentElement?.querySelector('[style*="1 /"]');
-  if(counter) counter.textContent = `${idx+1} / ${total}`;
+  // Actualizar contador si existe
+  const counter=document.getElementById(`${id}-counter`);
+  if(counter)counter.textContent=`${next+1} / ${total}`;
 }
 
 function expandFeedCap(btn,id){
