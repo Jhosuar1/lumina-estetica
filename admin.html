@@ -1447,27 +1447,26 @@ function removePending(idx){
 }
 
 async function uploadToStorage(file){
-  const ext  = file.name?.split('.').pop() || (file.type.startsWith('video/')?'mp4':'jpg');
-  const path = `posts/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  const res  = await fetch(`${SUPA_URL}/storage/v1/object/lumina-media/${path}`, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': `Bearer ${SUPA_KEY}`,
-      'Content-Type': file.type || 'application/octet-stream',
-      'x-upsert': 'true'
-    },
-    body: file
-  });
-  if (!res.ok) {
-    const txt = await res.text();
-    // Si el bucket no existe, guardar como base64 en su lugar
-    if (txt.includes('Bucket not found') || txt.includes('bucket') || txt.includes('404')) {
-      return await fileToBase64(file);
+  // Intentar Storage primero
+  try {
+    const ext  = file.name?.split('.').pop() || (file.type.startsWith('video/')?'mp4':'jpg');
+    const path = `posts/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const res  = await fetch(`${SUPA_URL}/storage/v1/object/lumina-media/${path}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Content-Type': file.type || 'application/octet-stream',
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+    if (res.ok) {
+      return `${SUPA_URL}/storage/v1/object/public/lumina-media/${path}`;
     }
-    throw new Error(txt);
-  }
-  return `${SUPA_URL}/storage/v1/object/public/lumina-media/${path}`;
+  } catch(e) {}
+  // Fallback: base64 (funciona siempre, ideal para imágenes)
+  return fileToBase64(file);
 }
 
 function fileToBase64(file){
@@ -1495,18 +1494,25 @@ async function publishPost(){
   try {
     if (videoLink) {
       await dbPost({
-        tipo:'video_link', url:videoLink, url_externa:videoLink,
-        titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0,
-        media_urls: null, media_tipos: null
+        tipo: 'video_link',
+        url: videoLink,
+        url_externa: videoLink,
+        titulo: cat || 'Publicación',
+        descripcion: caption,
+        activo: true,
+        orden: 0
       });
 
     } else if (pendingFiles.length === 1) {
       btn.textContent = 'Subiendo 1/1...';
       const url = await uploadToStorage(pendingFiles[0].file);
       await dbPost({
-        tipo:pendingFiles[0].tipo, url,
-        titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0,
-        media_urls: null, media_tipos: null
+        tipo: pendingFiles[0].tipo,
+        url: url,
+        titulo: cat || 'Publicación',
+        descripcion: caption,
+        activo: true,
+        orden: 0
       });
 
     } else {
@@ -1518,11 +1524,15 @@ async function publishPost(){
         urls.push(url); tipos.push(pendingFiles[i].tipo);
       }
       await dbPost({
-        tipo:'carrusel', url:urls[0],
+        tipo: 'carrusel',
+        url: urls[0],
         media_urls: urls,
         media_tipos: tipos,
-        titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0
-      });
+        titulo: cat || 'Publicación',
+        descripcion: caption,
+        activo: true,
+        orden: 0
+});
     }
 
     // Limpiar
