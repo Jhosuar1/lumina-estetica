@@ -159,13 +159,14 @@ section{padding:96px 48px}
 .feed-card-date{font-size:11px;color:var(--text-light);letter-spacing:.5px}
 
 /* RECOMENDACIONES */
-.recomendaciones{background:var(--rose-pale)}
-.reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
-.reco-card{background:var(--white);padding:28px 24px;border-radius:4px;border:1px solid var(--cream-dark);display:flex;gap:16px;align-items:flex-start;transition:var(--tr)}
-.reco-card:hover{box-shadow:0 8px 24px rgba(92,61,30,.08);transform:translateY(-2px)}
-.reco-icon{font-size:24px;flex-shrink:0;margin-top:2px}
-.reco-text h4{font-family:var(--font-d);font-size:17px;color:var(--rose-dark);margin-bottom:6px;font-weight:400}
-.reco-text p{font-size:13px;color:var(--text-mid);line-height:1.6}
+.recomendaciones{background:linear-gradient(160deg,var(--cream) 0%,var(--rose-pale) 100%)}
+.reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
+.reco-card{background:var(--white);padding:32px 28px;border-radius:12px;border:none;box-shadow:0 4px 24px rgba(92,61,30,.06);display:flex;gap:18px;align-items:flex-start;transition:var(--tr);position:relative;overflow:hidden}
+.reco-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(to bottom,var(--gold),var(--rose-deep));border-radius:12px 0 0 12px}
+.reco-card:hover{box-shadow:0 12px 40px rgba(92,61,30,.12);transform:translateY(-4px)}
+.reco-icon-wrap{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--rose-pale),var(--cream-dark));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}
+.reco-text h4{font-family:var(--font-d);font-size:19px;color:var(--rose-dark);margin-bottom:8px;font-weight:400;letter-spacing:.5px}
+.reco-text p{font-size:13px;color:var(--text-mid);line-height:1.7}
 
 /* BOOKING */
 #reservar{background:var(--white)}
@@ -400,13 +401,49 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
   <div class="section-label">Antes de tu cita</div>
   <div class="section-title">Prepárate para tu <em>tratamiento</em></div>
   <div class="reco-grid">
-    <div class="reco-card"><span class="reco-icon">🩺</span><div class="reco-text"><h4>Comparte tu historial de salud</h4><p>Informa a tu especialista sobre condiciones médicas, alergias, medicamentos o tratamientos recientes. Esta información es confidencial y garantiza tu seguridad.</p></div></div>
-    <div class="reco-card"><span class="reco-icon">🚫</span><div class="reco-text"><h4>Evita el alcohol 24 horas antes</h4><p>El consumo de alcohol aumenta la sensibilidad de la piel y puede alterar la respuesta a los tratamientos. Te pedimos abstenerte al menos 24 horas antes de tu cita.</p></div></div>
-    <div class="reco-card"><span class="reco-icon">☀️</span><div class="reco-text"><h4>Protege tu piel del sol</h4><p>Evita la exposición solar prolongada 48 horas antes y después de procedimientos faciales o láser. Usa protector solar SPF 50+ como parte de tu rutina post-tratamiento.</p></div></div>
-    <div class="reco-card"><span class="reco-icon">🧴</span><div class="reco-text"><h4>Llega con la piel limpia</h4><p>Para tratamientos faciales, asiste sin maquillaje ni cremas. Para depilación, la piel debe estar limpia y sin aceites. Esto garantiza mejores resultados desde el inicio.</p></div></div>
-    <div class="reco-card"><span class="reco-icon">💧</span><div class="reco-text"><h4>Mantente bien hidratada</h4><p>Beber suficiente agua antes y después de tu sesión potencia los resultados, especialmente en tratamientos corporales, drenaje linfático y procedimientos de detox.</p></div></div>
-    <div class="reco-card"><span class="reco-icon">⏰</span><div class="reco-text"><h4>Llega 10 minutos antes</h4><p>Te pedimos puntualidad para aprovechar al máximo el tiempo de tu cita. Si necesitas cancelar o reprogramar, avísanos con al menos 4 horas de anticipación.</p></div></div>
+  <div class="reco-card">
+    <div class="reco-icon-wrap">🩺</div>
+    <div class="reco-text">
+      <h4>Comparte tu historial de salud</h4>
+      <p>Informa a tu especialista sobre condiciones médicas, alergias, medicamentos o tratamientos recientes. Esta información es confidencial y garantiza tu seguridad.</p>
+    </div>
   </div>
+  <div class="reco-card">
+    <div class="reco-icon-wrap">🚫</div>
+    <div class="reco-text">
+      <h4>Evita el alcohol 24 horas antes</h4>
+      <p>El consumo de alcohol aumenta la sensibilidad de la piel y puede alterar la respuesta a los tratamientos. Abstente al menos 24 horas antes de tu cita.</p>
+    </div>
+  </div>
+  <div class="reco-card">
+    <div class="reco-icon-wrap">☀️</div>
+    <div class="reco-text">
+      <h4>Protege tu piel del sol</h4>
+      <p>Evita la exposición solar prolongada 48 horas antes y después de procedimientos faciales o láser. Usa protector solar SPF 50+ como rutina post-tratamiento.</p>
+    </div>
+  </div>
+  <div class="reco-card">
+    <div class="reco-icon-wrap">🧴</div>
+    <div class="reco-text">
+      <h4>Llega con la piel limpia</h4>
+      <p>Para tratamientos faciales, asiste sin maquillaje ni cremas. Para depilación, la piel debe estar limpia y sin aceites. Esto garantiza mejores resultados.</p>
+    </div>
+  </div>
+  <div class="reco-card">
+    <div class="reco-icon-wrap">💧</div>
+    <div class="reco-text">
+      <h4>Mantente bien hidratada</h4>
+      <p>Beber suficiente agua antes y después de tu sesión potencia los resultados, especialmente en tratamientos corporales y procedimientos de detox.</p>
+    </div>
+  </div>
+  <div class="reco-card">
+    <div class="reco-icon-wrap">⏰</div>
+    <div class="reco-text">
+      <h4>Llega 10 minutos antes</h4>
+      <p>Te pedimos puntualidad para aprovechar al máximo el tiempo de tu cita. Si necesitas cancelar o reprogramar, avísanos con al menos 4 horas de anticipación.</p>
+    </div>
+  </div>
+</div>
 </section>
 
 <!-- BOOKING -->
