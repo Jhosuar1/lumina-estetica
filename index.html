@@ -1057,6 +1057,7 @@ function onServiceChange() {
   const svc = SERVICES.find(s => s.id===id);
   const group  = document.getElementById('subcat-group');
   const subSel = document.getElementById('subcat-select');
+
   if (svc && svc.subcategorias && svc.subcategorias.length) {
     subSel.innerHTML = svc.subcategorias.map(sc=>`<option value="${sc.nombre}">${sc.nombre}</option>`).join('');
     group.classList.add('visible');
@@ -1064,15 +1065,25 @@ function onServiceChange() {
     group.classList.remove('visible');
     subSel.innerHTML = '';
   }
-  // Actualizar el intervalo del calendario según duración del servicio
-  if (svc && svc.duracion_minutos) {
-    CONFIG.intervalo = String(svc.duracion_minutos);
-  } else if (svc && svc.duracion) {
-    CONFIG.intervalo = String(svc.duracion);
+
+  // Cargar precio automáticamente
+  if (svc) {
+    const zonas  = svc.zonas_servicio || [];
+    const precios = zonas.map(z => z.precio).filter(Boolean);
+    const precio  = svc.precio || (precios.length ? Math.min(...precios) : 0);
+    // Guardar en variable global para usarla al confirmar
+    window._selectedPrice = precio;
+  } else {
+    window._selectedPrice = 0;
+  }
+
+  // Intervalo del calendario según duración del servicio
+  if (svc && (svc.duracion_minutos || svc.duracion)) {
+    CONFIG.intervalo = String(svc.duracion_minutos && svc.duracion);
   } else {
     CONFIG.intervalo = CONFIG._intervalo_global || '60';
   }
-  // Re-renderizar slots si hay fecha seleccionada
+
   if (selectedDate) renderSlots(selectedDate);
   checkConfirm();
 }
@@ -1105,7 +1116,7 @@ async function submitBooking() {
         fecha: selectedDate, hora: selectedSlot+':00',
         nombre: name, telefono: phone, email: email||null,
         servicio: svc?svc.nombre:'', subcategoria: subcat,
-        estado: 'pendiente', metodo_pago: method, monto: svc?.precio||0, notas:''
+        estado: 'pendiente', metodo_pago: method, monto: window._selectedPrice || svc?.precio || 0, notas:''
       })
     });
     const [y,mo,d] = selectedDate.split('-');
