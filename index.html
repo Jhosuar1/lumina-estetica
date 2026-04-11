@@ -1017,27 +1017,51 @@ function renderSlots(ds, booked=[]) {
   grid.innerHTML = '';
   const diasAbiertos = (CONFIG.dias_abiertos||'1,2,3,4,5,6').split(',').map(Number);
   const dow = new Date(ds+'T12:00:00').getDay();
-  const especial = CONFIG['horario_dia_'+dow] ? JSON.parse(CONFIG['horario_dia_'+dow]) : null;
-  const open     = especial ? especial.open  : (CONFIG.hora_apertura||'08:00');
-  const close    = especial ? especial.close : (CONFIG.hora_cierre  ||'19:00');
-  const interval = +(CONFIG.intervalo||60);
-  const [sh,sm]  = open.split(':').map(Number);
-  const [eh,em]  = close.split(':').map(Number);
-  const startMin = sh*60+sm, endMin = eh*60+em;
-  let count = 0;
-  for (let m=startMin; m<endMin; m+=interval) {
-    const h=String(Math.floor(m/60)).padStart(2,'0');
-    const min=String(m%60).padStart(2,'0');
-    const t=h+':'+min;
-    const btn=document.createElement('button');
-    btn.className='slot'+(booked.includes(t)?' occupied':'')+(selectedSlot===t?' selected':'');
-    btn.textContent=t; btn.disabled=booked.includes(t);
-    if(!booked.includes(t)) btn.onclick=()=>selectSlot(t);
-    grid.appendChild(btn); count++;
+  
+  // Leer horario específico del día
+  let open, close;
+  try {
+    const especial = CONFIG['horario_dia_'+dow] ? JSON.parse(CONFIG['horario_dia_'+dow]) : null;
+    open  = especial?.open  || CONFIG.hora_apertura || '08:00';
+    close = especial?.close || CONFIG.hora_cierre   || '19:00';
+  } catch(e) {
+    open  = CONFIG.hora_apertura || '08:00';
+    close = CONFIG.hora_cierre   || '19:00';
   }
-  if (!count) grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-light);font-size:13px">Sin horarios disponibles este día</div>';
-}
 
+  const interval = Math.max(15, parseInt(CONFIG.intervalo) || 60);
+
+  // Convertir horas a minutos
+  const [sh, sm] = open.split(':').map(Number);
+  const [eh, em] = close.split(':').map(Number);
+  const startMin = sh * 60 + (sm || 0);
+  const endMin   = eh * 60 + (em || 0);
+
+  // Depuración visible si el rango es inválido
+  if (endMin <= startMin) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-light);font-size:13px">Horario inválido: ${open} – ${close}</div>`;
+    return;
+  }
+
+  let count = 0;
+  for (let m = startMin; m < endMin; m += interval) {
+    const h   = String(Math.floor(m / 60)).padStart(2, '0');
+    const min = String(m % 60).padStart(2, '0');
+    const t   = h + ':' + min;
+    const btn = document.createElement('button');
+    btn.className = 'slot' + (booked.includes(t) ? ' occupied' : '') + (selectedSlot === t ? ' selected' : '');
+    btn.textContent = t;
+    btn.disabled = booked.includes(t);
+    if (!booked.includes(t)) btn.onclick = () => selectSlot(t);
+    grid.appendChild(btn);
+    count++;
+  }
+
+  if (!count) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-light);font-size:13px">Sin horarios disponibles este día</div>';
+  }
+}
+  
 function selectSlot(t) {
   selectedSlot = t;
   renderSlots(selectedDate);
