@@ -1346,31 +1346,33 @@ document.getElementById('hamburger').onclick = () => { document.getElementById('
 function closeMobileMenu() { document.getElementById('mobile-menu').classList.remove('open'); }
 // Autoplay videos cuando entran en pantalla (IntersectionObserver)
 function initVideoObserver(){
-  const observer = new IntersectionObserver((entries) => {
+  if(!('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       const v = entry.target;
+      const wrap = v.closest('.feed-video-wrap');
       if(entry.isIntersecting){
         v.play().catch(()=>{});
+        wrap?.classList.remove('paused');
       } else {
         v.pause();
       }
     });
   }, { threshold: 0.5 });
 
-  document.querySelectorAll('.feed-video-wrap video').forEach(v => {
-    observer.observe(v);
-  });
-  // Re-observar cuando se carga el feed
+  // Observar videos existentes
+  document.querySelectorAll('.feed-video-wrap video').forEach(v => io.observe(v));
+
+  // Observar videos que se agreguen dinámicamente (cuando carga el feed)
   const grid = document.getElementById('feed-grid');
   if(grid){
-    new MutationObserver(()=>{
-      grid.querySelectorAll('.feed-video-wrap video').forEach(v => {
-        observer.observe(v);
-      });
-    }).observe(grid, { childList:true });
+    new MutationObserver(() => {
+      grid.querySelectorAll('.feed-video-wrap video').forEach(v => io.observe(v));
+    }).observe(grid, { childList: true, subtree: true });
   }
 }
-window.addEventListener('load', ()=>{ init(); setTimeout(initVideoObserver, 1500); });
+
+window.addEventListener('load', () => { init(); setTimeout(initVideoObserver, 1200); });
 </script>
 </body>
 </html>
