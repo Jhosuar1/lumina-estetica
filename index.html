@@ -122,20 +122,6 @@ section{padding:96px 48px}
 
 /* FEED */
 .gallery{background:var(--cream-dark)}
-
-/* Video cuadrado autoplay */
-.feed-video-wrap{position:relative;width:100%;aspect-ratio:1/1;background:#111;overflow:hidden;cursor:pointer;display:block}
-.feed-video-wrap>video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
-.feed-video-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 50%);opacity:0;transition:.25s;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;pointer-events:none;z-index:3}
-.feed-video-wrap:hover .feed-video-overlay{opacity:1}
-.feed-video-actions{display:flex;align-items:center;justify-content:space-between;pointer-events:all}
-.feed-video-mute{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:4px 12px;font-size:10px;cursor:pointer;font-family:var(--font-b);backdrop-filter:blur(6px);transition:.2s}
-.feed-video-mute:hover{background:rgba(255,255,255,.28)}
-.feed-video-badge{font-size:9px;color:rgba(255,255,255,.85);letter-spacing:1.5px;text-transform:uppercase}
-.feed-video-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.32);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;opacity:0;transition:opacity .22s;pointer-events:none;z-index:4}
-.feed-video-wrap.paused .feed-video-icon{opacity:1}
-
-/* Cards feed estilo Instagram */
 .feed-card{background:var(--white);border:1px solid var(--cream-dark);border-radius:12px;overflow:hidden;transition:var(--tr)}
 .feed-card:hover{box-shadow:0 6px 24px rgba(92,61,30,.08)}
 .feed-card-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--cream-dark)}
@@ -145,12 +131,20 @@ section{padding:96px 48px}
 .feed-card-name{font-size:13px;font-weight:500;color:var(--rose-dark)}
 .feed-card-meta{font-size:11px;color:var(--text-light)}
 .feed-card-badge{margin-left:auto;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--white);background:var(--gold);padding:3px 10px;border-radius:20px;white-space:nowrap}
-.feed-card-media{position:relative;overflow:hidden;cursor:pointer;background:#111;aspect-ratio:1/1;display:block;width:100%}
-.feed-card-media img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
-.feed-card-media:hover img{transform:scale(1.03)}
-.feed-card-media-overlay{position:absolute;inset:0;background:rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;opacity:0;transition:.25s;z-index:2}
+.feed-card-media{position:relative;overflow:hidden;cursor:pointer;background:#111}
+.feed-card-media img{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
+.feed-card-media-overlay{position:absolute;inset:0;background:rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;opacity:0;transition:.25s}
 .feed-card-media:hover .feed-card-media-overlay{opacity:1}
 .feed-card-media-overlay span{font-size:44px}
+/* Video feed — igual que el admin, autoplay silencioso */
+.feed-video-wrap{position:relative;overflow:hidden;background:#111;cursor:pointer}
+.feed-video-wrap video{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
+.feed-video-overlay{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(to top,rgba(0,0,0,.55),transparent);opacity:0;transition:.25s;display:flex;align-items:center;justify-content:space-between}
+.feed-video-wrap:hover .feed-video-overlay{opacity:1}
+.feed-video-mute{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:4px 12px;font-size:10px;cursor:pointer;font-family:var(--font-b);backdrop-filter:blur(4px)}
+.feed-video-badge{font-size:9px;color:rgba(255,255,255,.85);letter-spacing:1.5px;text-transform:uppercase}
+.feed-video-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;opacity:0;transition:opacity .22s;pointer-events:none;z-index:2}
+.feed-video-wrap.paused .feed-video-icon{opacity:1}
 .feed-card-body{padding:14px 16px}
 .feed-card-caption{font-size:14px;color:var(--text-mid);line-height:1.65;white-space:pre-wrap;margin-bottom:8px}
 .feed-card-caption.truncated{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -935,7 +929,7 @@ function buildFeedMedia(m, idx){
           <div style="min-width:100%">
             ${(m.media_tipos||[])[i]==='video'
               ? buildInlineVideo(url, `fv-${m.id}-${i}`)
-              : `<img src="${url}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
+              : `<img src="${url}" style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
           </div>`).join('')}
       </div></div>
       ${m.media_urls.length>1?`
@@ -960,7 +954,7 @@ function buildFeedMedia(m, idx){
   }
   // Imagen
   return `<div class="feed-card-media" onclick="openFeedLightbox(${idx})">
-    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy">
+    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy" style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111">
     <div class="feed-card-media-overlay"><span>🔍</span></div>
   </div>`;
 }
@@ -970,18 +964,17 @@ function buildInlineVideo(url, vid_id){
     <video id="${vid_id}" src="${url}"
       autoplay muted loop playsinline preload="metadata"
       controlsList="nodownload nofullscreen noremoteplayback"
-      oncontextmenu="return false">
+      oncontextmenu="return false"
+      style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111">
     </video>
     <div class="feed-video-icon" id="icon-${vid_id}">▶</div>
     <div class="feed-video-overlay">
-      <div class="feed-video-actions">
-        <span class="feed-video-badge">▶ VIDEO</span>
-        <button class="feed-video-mute" id="mute-${vid_id}"
-          onclick="toggleMuteFeed('${vid_id}',event)">🔇 Sonido</button>
-      </div>
+      <span class="feed-video-badge">▶ VIDEO</span>
+      <button class="feed-video-mute" id="mute-${vid_id}"
+        onclick="toggleMuteFeed('${vid_id}',event)">🔇 Sonido</button>
     </div>
     <div onclick="toggleFeedVideo('${vid_id}')"
-      style="position:absolute;inset:0;z-index:2;cursor:pointer"></div>
+      style="position:absolute;inset:0;z-index:1;cursor:pointer"></div>
   </div>`;
 }
   
