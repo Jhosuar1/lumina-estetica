@@ -470,8 +470,9 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
         </select>
       </div>
       <div class="form-group" id="subcat-group">
-        <label>Tipo de tratamiento</label>
+        <label>Selecciona el tipo / zona</label>
         <select id="subcat-select"></select>
+        <div id="precio-seleccionado" style="display:none;margin-top:8px;font-family:var(--font-d);font-size:18px;color:var(--gold)"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Nombre completo</label><input type="text" id="client-name" placeholder="Tu nombre"></div>
@@ -1082,30 +1083,79 @@ function onServiceChange() {
   const group  = document.getElementById('subcat-group');
   const subSel = document.getElementById('subcat-select');
 
-  if (svc && svc.subcategorias && svc.subcategorias.length) {
-    subSel.innerHTML = svc.subcategorias.map(sc=>`<option value="${sc.nombre}">${sc.nombre}</option>`).join('');
-    group.classList.add('visible');
-  } else {
-    group.classList.remove('visible');
-    subSel.innerHTML = '';
-  }
+  subSel.innerHTML = '';
+  group.classList.remove('visible');
 
-  // Cargar precio automáticamente
   if (svc) {
-    const zonas  = svc.zonas_servicio || [];
-    const precios = zonas.map(z => z.precio).filter(Boolean);
-    const precio  = svc.precio || (precios.length ? Math.min(...precios) : 0);
-    // Guardar en variable global para usarla al confirmar
-    window._selectedPrice = precio;
+    const zonas   = svc.zonas_servicio  || [];
+    const subcats = svc.subcategorias   || [];
+
+    // Construir opciones: primero zonas (con precio), luego subcats simples
+    const opciones = [];
+
+    if (zonas.length) {
+      // Agrupar zonas por categoría
+      const cats = {};
+      zonas.forEach(z => {
+        if (!cats[z.categoria]) cats[z.categoria] = [];
+        cats[z.categoria].push(z);
+      });
+      Object.entries(cats).forEach(([cat, items]) => {
+        // Separador de categoría
+        const sep = document.createElement('option');
+        sep.disabled = true;
+        sep.textContent = '── ' + cat + ' ──';
+        sep.style.color = '#a08060';
+        subSel.appendChild(sep);
+        items.forEach(z => {
+          const o = document.createElement('option');
+          o.value = z.nombre;
+          o.textContent = z.nombre + (z.precio ? '  —  $' + Number(z.precio).toLocaleString('es-CO') : '');
+          o.dataset.precio = z.precio || 0;
+          subSel.appendChild(o);
+          opciones.push(o);
+        });
+      });
+    } else if (subcats.length) {
+      subcats.forEach(sc => {
+        const o = document.createElement('option');
+        o.value = sc.nombre;
+        o.textContent = sc.nombre;
+        o.dataset.precio = 0;
+        subSel.appendChild(o);
+        opciones.push(o);
+      });
+    }
+
+    if (opciones.length) {
+      group.classList.add('visible');
+      // Precio inicial = primera opción seleccionable
+      const primera = opciones[0];
+      window._selectedPrice = +primera.dataset.precio || svc.precio || 0;
+      // Actualizar precio cuando cambia la opción
+      subSel.onchange = () => {
+        const sel = subSel.options[subSel.selectedIndex];
+        window._selectedPrice = +sel.dataset.precio || svc.precio || 0;
+        // Actualizar label de precio visible si existe
+        const lbl = document.getElementById('precio-seleccionado');
+        if (lbl && window._selectedPrice) {
+          lbl.textContent = 'Precio: $' + Number(window._selectedPrice).toLocaleString('es-CO');
+          lbl.style.display = 'block';
+        }
+      };
+    } else {
+      // Sin zonas ni subcats → precio base del servicio
+      window._selectedPrice = svc.precio || 0;
+    }
+
+    // Intervalo del calendario según duración del servicio
+    if (svc.duracion_minutos || svc.duracion) {
+      CONFIG.intervalo = String(svc.duracion_minutos || svc.duracion);
+    } else {
+      CONFIG.intervalo = CONFIG._intervalo_global || '60';
+    }
   } else {
     window._selectedPrice = 0;
-  }
-
-  // Intervalo del calendario según duración del servicio
-  if (svc && (svc.duracion_minutos || svc.duracion)) {
-    CONFIG.intervalo = String(svc.duracion_minutos && svc.duracion);
-  } else {
-    CONFIG.intervalo = CONFIG._intervalo_global || '60';
   }
 
   if (selectedDate) renderSlots(selectedDate);
@@ -1128,7 +1178,16 @@ async function submitBooking() {
   btn.disabled = true; btn.classList.add('loading'); btn.textContent = 'Reservando...';
   const svcId  = +document.getElementById('service-select').value;
   const svc    = SERVICES.find(s=>s.id===svcId);
-  const subcat = document.getElementById('subcat-select').value || null;
+  const subSel  = document.getElementById('subcat-select');
+  const subcat  = subSel.value && !subSel.options[subSel.selectedIndex]?.disabled
+    ? subSel.value : null;
+  // Actualizar precio desde la opción seleccionada
+  if (subSel.selectedIndex >= 0) {
+    const selOpt = subSel.options[subSel.selectedIndex];
+    if (selOpt && selOpt.dataset.precio && +selOpt.dataset.precio > 0) {
+      window._selectedPrice = +selOpt.dataset.precio;
+    }
+  }
   const name   = document.getElementById('client-name').value.trim();
   const phone  = document.getElementById('client-phone').value.trim();
   const email  = document.getElementById('client-email').value.trim();
