@@ -358,7 +358,7 @@ tbody tr:hover{background:var(--rose-pale)}
           <div class="card-actions">
             <input type="search" id="search-cl" placeholder="Buscar…" style="padding:7px 11px;border:1px solid var(--rose-light);border-radius:4px;font-family:var(--font-b);font-size:12px;background:var(--cream);color:var(--text);outline:none" oninput="renderClientes()">
             <button class="btn btn-o btn-sm" onclick="exportTbl('tbl-cl','Clientes_LUMINA')">⬇ Excel</button>
-            <button class="btn btn-p btn-sm" onclick="openM('nuevo-cl')">+ Nuevo</button>
+            <button class="btn btn-p btn-sm" onclick="document.getElementById('cl-id').value='';document.getElementById('cl-modal-title').textContent='Cliente';openM('nuevo-cl')">+ Nuevo</button>
           </div>
         </div>
         <div class="tbl-wrap">
@@ -663,12 +663,17 @@ tbody tr:hover{background:var(--rose-pale)}
 </div></div>
 
 <div class="mo" id="m-nuevo-cl"><div class="mo-box">
-  <div class="mo-title">Cliente</div>
+  <div class="mo-title" id="cl-modal-title">Cliente</div>
+  <input type="hidden" id="cl-id">
   <div class="fr">
     <div class="fg"><label>Nombre</label><input type="text" id="cl-n" placeholder="Nombre completo"></div>
     <div class="fg"><label>Teléfono</label><input type="tel" id="cl-p" placeholder="+57 300…"></div>
   </div>
   <div class="fg"><label>Email</label><input type="email" id="cl-e" placeholder="correo@ejemplo.com"></div>
+  <div class="fr">
+    <div class="fg"><label>Total gastado (COP)</label><input type="number" id="cl-tg" placeholder="0" min="0"></div>
+    <div class="fg"><label>Número de visitas</label><input type="number" id="cl-vis" placeholder="0" min="0"></div>
+  </div>
   <div class="fg"><label>Notas / alergias / historial</label><textarea id="cl-no" rows="3" placeholder="Información médica relevante, preferencias, etc."></textarea></div>
   <div class="mo-actions">
     <button class="btn btn-o" onclick="closeMs()">Cancelar</button>
@@ -1101,12 +1106,43 @@ function renderClientes(){
       <td style="font-size:11px;color:var(--text-light);max-width:120px;overflow:hidden;text-overflow:ellipsis">${c.notas||'—'}</td>
       <td style="display:flex;gap:4px">
         <button class="btn btn-o btn-sm" onclick="waClient('${c.telefono}')">WA</button>
+        <button class="btn btn-o btn-sm" onclick="editCl('${c.id}')">x</button>
         <button class="btn-red" onclick="delCl('${c.id}')">✕</button>
       </td>
     </tr>`).join('');
 }
+  
+function editCl(id){
+  const c = CLS.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('cl-id').value        = id;
+  document.getElementById('cl-modal-title').textContent = 'Editar cliente';
+  document.getElementById('cl-n').value         = c.nombre||'';
+  document.getElementById('cl-p').value         = c.telefono||'';
+  document.getElementById('cl-e').value         = c.email||'';
+  document.getElementById('cl-no').value        = c.notas||'';
+  document.getElementById('cl-tg').value        = c.total_gastado||0;
+  document.getElementById('cl-vis').value       = c.visitas||0;
+  openM('nuevo-cl');
+}
+
 async function saveCl(){
-  await db('clientes',{method:'POST',body:JSON.stringify({nombre:document.getElementById('cl-n').value.trim(),telefono:document.getElementById('cl-p').value,email:document.getElementById('cl-e').value||null,notas:document.getElementById('cl-no').value,visitas:0,total_gastado:0})});
+  const id   = document.getElementById('cl-id').value;
+  const data = {
+    nombre:        document.getElementById('cl-n').value.trim(),
+    telefono:      document.getElementById('cl-p').value,
+    email:         document.getElementById('cl-e').value||null,
+    notas:         document.getElementById('cl-no').value,
+    total_gastado: +document.getElementById('cl-tg').value||0,
+    visitas:       +document.getElementById('cl-vis').value||0
+  };
+  if(id){
+    await db(`clientes?id=eq.${id}`,{method:'PATCH',body:JSON.stringify(data)});
+  } else {
+    await db('clientes',{method:'POST',body:JSON.stringify(data)});
+  }
+  document.getElementById('cl-id').value='';
+  document.getElementById('cl-modal-title').textContent='Cliente';
   closeMs(); await loadCl();
 }
 async function delCl(id){if(!confirm('¿Eliminar cliente?'))return;await db(`clientes?id=eq.${id}`,{method:'DELETE'});await loadCl();}
@@ -1239,20 +1275,30 @@ async function saveGasto(){
 async function loadConfig(){
   try{
     const rows = await db('config?select=*');
-    if(!rows) return;
+    if(!rows||!rows.length){ renderHoursConfig([1,2,3,4,5,6],{},{}); return; }
     const map = {};
     rows.forEach(r=>{ map[r.clave]=r.valor; });
-    if(map.hora_apertura) document.getElementById('cfg-open')?.value !== undefined && null; // no default input
-    if(map.intervalo) document.getElementById('cfg-interval').value = map.intervalo;
-    if(map.logo_url && map.logo_url.length > 10) showLogo(map.logo_url);
+    if(map.logo_url && map.logo_url.length>10) showLogo(map.logo_url);
+    // Datos del negocio
+    if(map.negocio_nombre)    document.getElementById('cfg-name').value   = map.negocio_nombre;
+    if(map.negocio_wa)        document.getElementById('cfg-wa').value     = map.negocio_wa;
+    if(map.negocio_instagram) document.getElementById('cfg-ig').value     = map.negocio_instagram;
+    if(map.negocio_tiktok)    document.getElementById('cfg-tt').value     = map.negocio_tiktok;
+    if(map.negocio_direccion) document.getElementById('cfg-addr').value   = map.negocio_direccion;
+    // Horarios
     const dias = map.dias_abiertos ? map.dias_abiertos.split(',').map(Number) : [1,2,3,4,5,6];
     const especiales = {};
     rows.filter(r=>r.clave.startsWith('horario_dia_')).forEach(r=>{
-      const d=parseInt(r.clave.replace('horario_dia_',''));
-      especiales[d]=JSON.parse(r.valor);
+      try{
+        const d = parseInt(r.clave.replace('horario_dia_',''));
+        especiales[d] = JSON.parse(r.valor);
+      }catch(e){}
     });
     renderHoursConfig(dias, map, especiales);
-  }catch(e){ renderHoursConfig([1,2,3,4,5,6],{},{}); }
+  }catch(e){
+    console.error('loadConfig error:',e);
+    renderHoursConfig([1,2,3,4,5,6],{},{});
+  }
 }
 
 function renderHoursConfig(open=[], configMap={}, especiales={}){
@@ -1284,23 +1330,33 @@ function renderHoursConfig(open=[], configMap={}, especiales={}){
 }
 
 async function saveConfig(){
-  const dias = [0,1,2,3,4,5,6].filter(i=>document.getElementById('day-'+i)?.checked);
-  // Determinar hora global del primer día activo
-  const firstDay = dias[0] ?? 1;
-  const globalOpen  = document.getElementById('open-'+firstDay)?.value  || '08:00';
-  const globalClose = document.getElementById('close-'+firstDay)?.value || '19:00';
-  await upsertConfig('dias_abiertos', dias.join(','));
-  await upsertConfig('hora_apertura', globalOpen);
-  await upsertConfig('hora_cierre',   globalClose);
-  // Guardar horario especial de cada día
-  for(let i=0;i<=6;i++){
-    const openEl  = document.getElementById('open-'+i);
-    const closeEl = document.getElementById('close-'+i);
-    if(openEl && closeEl){
-      await upsertConfig('horario_dia_'+i, JSON.stringify({open:openEl.value, close:closeEl.value}));
+  const btn = event?.target;
+  if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
+  try{
+    const dias = [0,1,2,3,4,5,6].filter(i=>document.getElementById('day-'+i)?.checked);
+    await upsertConfig('dias_abiertos', dias.join(','));
+    // Guardar horario individual de cada día (incluidos los cerrados, para no perder datos)
+    for(let i=0;i<=6;i++){
+      const openEl  = document.getElementById('open-'+i);
+      const closeEl = document.getElementById('close-'+i);
+      if(openEl && closeEl){
+        await upsertConfig('horario_dia_'+i, JSON.stringify({
+          open:  openEl.value  || '08:00',
+          close: closeEl.value || '19:00'
+        }));
+      }
     }
+    // Hora global = del primer día activo (para compatibilidad con index.html)
+    const first = dias[0] ?? 1;
+    const gOpen  = document.getElementById('open-'+first)?.value  || '08:00';
+    const gClose = document.getElementById('close-'+first)?.value || '19:00';
+    await upsertConfig('hora_apertura', gOpen);
+    await upsertConfig('hora_cierre',   gClose);
+    alert('✅ Horarios guardados. Ya se reflejan en la página pública.');
+  }catch(e){
+    alert('Error al guardar: '+e.message);
   }
-  alert('✅ Horarios guardados correctamente. Ya se reflejan en la página pública.');
+  if(btn){ btn.disabled=false; btn.textContent='Guardar horarios'; }
 }
 
 async function saveIntervalConfig(){
@@ -1390,6 +1446,39 @@ function removePending(idx){
   renderThumbs();
 }
 
+async function uploadToStorage(file){
+  const ext  = file.name?.split('.').pop() || (file.type.startsWith('video/')?'mp4':'jpg');
+  const path = `posts/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const res  = await fetch(`${SUPA_URL}/storage/v1/object/lumina-media/${path}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    // Si el bucket no existe, guardar como base64 en su lugar
+    if (txt.includes('Bucket not found') || txt.includes('bucket') || txt.includes('404')) {
+      return await fileToBase64(file);
+    }
+    throw new Error(txt);
+  }
+  return `${SUPA_URL}/storage/v1/object/public/lumina-media/${path}`;
+}
+
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload  = e => resolve(e.target.result);
+    r.onerror = () => reject(new Error('Error leyendo archivo'));
+    r.readAsDataURL(file);
+  });
+}
+
 async function publishPost(){
   const caption   = document.getElementById('post-caption').value.trim();
   const cat       = document.getElementById('post-cat').value;
@@ -1408,7 +1497,7 @@ async function publishPost(){
       await dbPost({
         tipo:'video_link', url:videoLink, url_externa:videoLink,
         titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0,
-        media_urls:[], media_tipos:[]
+        media_urls: null, media_tipos: null
       });
 
     } else if (pendingFiles.length === 1) {
@@ -1417,7 +1506,7 @@ async function publishPost(){
       await dbPost({
         tipo:pendingFiles[0].tipo, url,
         titulo:cat||'Publicación', descripcion:caption, activo:true, orden:0,
-        media_urls:[], media_tipos:[]
+        media_urls: null, media_tipos: null
       });
 
     } else {
