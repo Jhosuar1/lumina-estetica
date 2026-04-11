@@ -122,18 +122,17 @@ section{padding:96px 48px}
 
 /* FEED */
 .gallery{background:var(--cream-dark)}
-.feed-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-@media(max-width:700px){.feed-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:400px){.feed-grid{grid-template-columns:1fr}}
-.feed-post{position:relative;overflow:hidden;background:var(--rose-pale);cursor:pointer}
-.feed-post::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(92,61,30,.7) 0%,transparent 50%);opacity:0;transition:.3s}
-.feed-post:hover::after{opacity:1}
-.feed-post img,.feed-post video{width:100%;aspect-ratio:1;object-fit:cover;display:block;transition:transform .5s}
-.feed-post:hover img,.feed-post:hover video{transform:scale(1.04)}
-.feed-post-info{position:absolute;bottom:0;left:0;right:0;padding:14px;z-index:2;transform:translateY(10px);opacity:0;transition:.3s}
-.feed-post:hover .feed-post-info{transform:translateY(0);opacity:1}
-.feed-post-cat{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-bottom:4px}
-.feed-post-caption{font-size:12px;color:#fff;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Video feed tipo reel — autoplay silencioso */
+.feed-video-wrap{position:relative;width:100%;background:#000;overflow:hidden}
+.feed-video-wrap video{width:100%;aspect-ratio:9/16;object-fit:cover;display:block;cursor:pointer}
+.feed-video-controls{position:absolute;bottom:0;left:0;right:0;padding:12px;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);display:flex;align-items:center;justify-content:space-between;opacity:0;transition:.25s}
+.feed-video-wrap:hover .feed-video-controls{opacity:1}
+.feed-video-wrap:hover video{transform:none}
+.feed-video-mute{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--font-b);backdrop-filter:blur(4px)}
+.feed-video-mute:hover{background:rgba(255,255,255,.35)}
+.feed-video-badge{font-size:10px;color:rgba(255,255,255,.8);letter-spacing:1px}
+/* Cards feed */
+.feed-card-media video{width:100%;max-height:500px;display:block;background:#000;outline:none;cursor:pointer}
 /* FEED SOCIAL */
 .feed-card{background:var(--white);border:1px solid var(--cream-dark);border-radius:12px;overflow:hidden;transition:var(--tr)}
 .feed-card:hover{box-shadow:0 6px 24px rgba(92,61,30,.08)}
@@ -524,15 +523,52 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:60px 48px 28px}
       <div class="info-item"><span class="info-icon">🕐</span><div class="info-text"><h5>Horarios</h5><p id="hours-footer">Cargando...</p></div></div>
       <div style="margin-top:28px"><a href="https://wa.me/573213428678?text=Hola!%20Quiero%20información%20sobre%20LÚMINA%20🌸" target="_blank" class="btn-primary">Escribir por WhatsApp</a></div>
     </div>
-    <div class="map-container">
-      <div style="height:380px;background:linear-gradient(135deg,var(--rose-pale),var(--cream-dark));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-        <div style="font-size:48px">📍</div>
-        <div style="text-align:center">
-          <p style="font-family:var(--font-d);font-size:22px;color:var(--rose-dark);margin-bottom:6px">LÚMINA Estética Integral</p>
-          <p style="font-size:13px;color:var(--text-mid);margin-bottom:20px">Cra 21 #66-51, La Rivera San Fernando · Pereira</p>
-          <a href="https://www.google.com/maps?q=L%C3%BAmina,+Cra.+21+%2366-51,+Pereira,+Risaralda&ftid=0x8e387d001bd0e495:0x3d63898a9d9e7d83" target="_blank" style="background:var(--rose-dark);color:#fff;padding:14px 32px;border-radius:2px;text-decoration:none;font-family:var(--font-b);font-size:12px;letter-spacing:2px;text-transform:uppercase">Ver en Google Maps →</a>
+    <div class="map-container" style="position:relative;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(92,61,30,.12)">
+      <!-- Imagen estática de Google Maps (sin API key, embed estático) -->
+      <img
+        src="https://maps.googleapis.com/maps/api/staticmap?center=4.8143,-75.6946&zoom=16&size=600x380&scale=2&maptype=roadmap&markers=color:0x5c3d1e%7Clabel:L%7C4.8143,-75.6946&style=feature:all%7Celement:geometry%7Ccolor:0xfdfaf5&style=feature:road%7Celement:geometry%7Ccolor:0xe8d5b0&style=feature:water%7Celement:geometry%7Ccolor:0xc9a96e&key=AIzaSyD-placeholder"
+        onerror="this.style.display='none';document.getElementById('map-fallback').style.display='flex'"
+        style="width:100%;height:380px;object-fit:cover;display:block"
+        alt="Mapa LÚMINA Estética"
+      >
+      <!-- Fallback bonito si no carga la imagen -->
+      <div id="map-fallback" style="display:flex;height:380px;background:linear-gradient(135deg,#fdfaf5 0%,#f0e8d8 40%,#e8d5b0 100%);flex-direction:column;align-items:center;justify-content:center;gap:0;position:relative;overflow:hidden">
+        <!-- Líneas decorativas tipo calle -->
+        <div style="position:absolute;inset:0;opacity:.15">
+          <div style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--rose-dark)"></div>
+          <div style="position:absolute;top:50%;left:0;right:0;height:2px;background:var(--rose-dark)"></div>
+          <div style="position:absolute;left:25%;top:0;bottom:0;width:1px;background:var(--rose-dark)"></div>
+          <div style="position:absolute;left:75%;top:0;bottom:0;width:1px;background:var(--rose-dark)"></div>
+          <div style="position:absolute;top:30%;left:0;right:0;height:1px;background:var(--rose-dark)"></div>
+          <div style="position:absolute;top:70%;left:0;right:0;height:1px;background:var(--rose-dark)"></div>
+        </div>
+        <!-- Pin central -->
+        <div style="position:relative;z-index:1;text-align:center">
+          <div style="width:56px;height:56px;background:var(--rose-dark);border-radius:50% 50% 50% 0;transform:rotate(-45deg);margin:0 auto 4px;box-shadow:0 8px 24px rgba(92,61,30,.35)">
+            <div style="width:22px;height:22px;background:#fff;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+          </div>
+          <div style="margin-top:20px">
+            <p style="font-family:var(--font-d);font-size:22px;color:var(--rose-dark);margin-bottom:4px;font-weight:400">LÚMINA Estética Integral</p>
+            <p style="font-size:12px;color:var(--text-mid);letter-spacing:.5px;margin-bottom:20px">Cra 21 #66-51 · La Rivera San Fernando · Pereira</p>
+            <a href="https://www.google.com/maps/search/Lumina+Estetica+Integral/@4.8143,-75.6946,17z" target="_blank"
+              style="display:inline-flex;align-items:center;gap:8px;background:var(--rose-dark);color:#fff;padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--font-b);font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:.3s">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Abrir en Google Maps
+            </a>
+          </div>
         </div>
       </div>
+      <!-- Overlay badge permanente encima de la imagen si carga -->
+      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(92,61,30,.75),transparent);padding:20px 24px;pointer-events:none">
+        <p style="color:#fff;font-family:var(--font-d);font-size:18px;margin-bottom:2px">LÚMINA Estética Integral</p>
+        <p style="color:rgba(255,255,255,.8);font-size:12px">Cra 21 #66-51 · La Rivera San Fernando · Pereira</p>
+      </div>
+      <!-- Botón encima siempre visible -->
+      <a href="https://www.google.com/maps/search/Lumina+Estetica+Integral/@4.8143,-75.6946,17z" target="_blank"
+        style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.95);color:var(--rose-dark);padding:9px 16px;border-radius:6px;text-decoration:none;font-family:var(--font-b);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 4px 16px rgba(0,0,0,.15);display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Ver en Maps
+      </a>
     </div>
   </div>
 </section>
@@ -866,43 +902,74 @@ async function loadFeed(){
 }
 
 function buildFeedMedia(m, idx){
-  if(m.tipo==='carrusel' && m.media_urls && m.media_urls.length){
-    const id='fcar-'+m.id;
-    return `<div style="position:relative;overflow:hidden;background:#000">
-      <div id="${id}" style="overflow:hidden">
-        <div class="car-track" style="display:flex;transition:transform .35s">
-          ${m.media_urls.map((url,i)=>`
-            <div style="min-width:100%">
-              ${(m.media_tipos||[])[i]==='video'
-                ?`<video src="${url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;background:#000;display:block;outline:none"></video>`
-                :`<img src="${url}" style="width:100%;max-height:480px;object-fit:cover;display:block;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
-            </div>`).join('')}
-        </div>
-      </div>
+  // Carrusel
+  if(m.tipo==='carrusel' && m.media_urls?.length){
+    const id = 'fcar-'+m.id;
+    return `<div style="position:relative;overflow:hidden;background:#000;border-radius:0">
+      <div id="${id}"><div class="car-track" style="display:flex;transition:transform .38s cubic-bezier(.25,.8,.25,1)">
+        ${m.media_urls.map((url,i)=>`
+          <div style="min-width:100%">
+            ${(m.media_tipos||[])[i]==='video'
+              ? buildInlineVideo(url, `fv-${m.id}-${i}`)
+              : `<img src="${url}" style="width:100%;max-height:520px;object-fit:cover;display:block;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
+          </div>`).join('')}
+      </div></div>
       ${m.media_urls.length>1?`
-        <button onclick="carNav('${id}',-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
-        <button onclick="carNav('${id}',1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">›</button>
-        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px">
-          ${m.media_urls.map((_,i)=>`<div class="car-dot" data-car="${id}" data-i="${i}" style="width:7px;height:7px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.45)'};cursor:pointer" onclick="carNav('${id}',${i}-carPositions['${id}']||0)"></div>`).join('')}
-        </div>`:''}
+        <button onclick="carNav('${id}',-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.3);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:2">‹</button>
+        <button onclick="carNav('${id}',1)"  style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.3);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:2">›</button>
+        <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:2">
+          ${m.media_urls.map((_,i)=>`<div id="${id}-dot-${i}" style="width:6px;height:6px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.4)'};transition:.2s;cursor:pointer" onclick="carGoTo('${id}',${i})"></div>`).join('')}
+        </div>
+        <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:3px 9px;border-radius:12px;backdrop-filter:blur(4px)">1 / ${m.media_urls.length}</div>`:''}
     </div>`;
   }
-  if(m.tipo==='video_link'||m.url_externa){
-    const embed=getEmbedUrl(m.url_externa||m.url);
+  // Link externo (YouTube / Vimeo / Drive)
+  if(m.tipo==='video_link' || m.url_externa){
+    const embed = getEmbedUrl(m.url_externa||m.url);
     return embed
-      ?`<div style="position:relative;padding-bottom:56.25%;background:#000"><iframe src="${embed}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen allow="autoplay"></iframe></div>`
-      :`<video src="${m.url_externa||m.url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;background:#000;display:block;outline:none"></video>`;
+      ? `<div style="position:relative;padding-bottom:56.25%;background:#000"><iframe src="${embed}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe></div>`
+      : buildInlineVideo(m.url_externa||m.url, 'fv-ext-'+m.id);
   }
+  // Video directo — autoplay silencioso tipo reel
   if(m.tipo==='video'){
-    return `<div style="position:relative">
-      <video src="${m.url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;background:#000;display:block;outline:none"></video>
-      <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:4px 10px;border-radius:12px">🎬 VIDEO</div>
-    </div>`;
+    return buildInlineVideo(m.url, 'fv-'+m.id);
   }
+  // Imagen
   return `<div class="feed-card-media" onclick="openFeedLightbox(${idx})">
-    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy">
+    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy" style="width:100%;max-height:520px;object-fit:cover;display:block">
     <div class="feed-card-media-overlay"><span>🔍</span></div>
   </div>`;
+}
+
+function buildInlineVideo(url, vid_id){
+  return `<div class="feed-video-wrap" id="wrap-${vid_id}">
+    <video id="${vid_id}" src="${url}"
+      autoplay muted loop playsinline
+      controlsList="nodownload nofullscreen noremoteplayback"
+      oncontextmenu="return false"
+      style="width:100%;aspect-ratio:9/16;object-fit:cover;display:block;cursor:pointer"
+      onclick="toggleFeedVideo('${vid_id}')">
+    </video>
+    <div class="feed-video-controls">
+      <span class="feed-video-badge">🎬 VIDEO</span>
+      <button class="feed-video-mute" id="mute-${vid_id}" onclick="toggleMute('${vid_id}',event)">🔇 Activar sonido</button>
+    </div>
+  </div>`;
+}
+
+function toggleFeedVideo(id){
+  const v = document.getElementById(id);
+  if(!v) return;
+  v.paused ? v.play() : v.pause();
+}
+
+function toggleMute(id, e){
+  e.stopPropagation();
+  const v = document.getElementById(id);
+  const btn = document.getElementById('mute-'+id);
+  if(!v) return;
+  v.muted = !v.muted;
+  btn.textContent = v.muted ? '🔇 Activar sonido' : '🔊 Silenciar';
 }
 
 function getEmbedUrl(url){
@@ -928,6 +995,21 @@ function carNav(id,dir){
   wrap.parentElement.querySelectorAll('.car-dot').forEach((d,i)=>{
     d.style.background=i===next?'#fff':'rgba(255,255,255,.45)';
   });
+}
+
+function carGoTo(id, idx){
+  const wrap = document.getElementById(id); if(!wrap) return;
+  const track = wrap.querySelector('.car-track');
+  const total = track.children.length;
+  carPositions[id] = idx;
+  track.style.transform = `translateX(-${idx*100}%)`;
+  for(let i=0; i<total; i++){
+    const dot = document.getElementById(`${id}-dot-${i}`);
+    if(dot) dot.style.background = i===idx ? '#fff' : 'rgba(255,255,255,.4)';
+  }
+  // Actualizar contador "1 / N"
+  const counter = wrap.parentElement?.querySelector('[style*="1 /"]');
+  if(counter) counter.textContent = `${idx+1} / ${total}`;
 }
 
 function expandFeedCap(btn,id){
@@ -1248,7 +1330,33 @@ function closeModal() { document.getElementById('modal').classList.remove('activ
 window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY>60); });
 document.getElementById('hamburger').onclick = () => { document.getElementById('mobile-menu').classList.toggle('open'); };
 function closeMobileMenu() { document.getElementById('mobile-menu').classList.remove('open'); }
-window.addEventListener('load', init);
+// Autoplay videos cuando entran en pantalla (IntersectionObserver)
+function initVideoObserver(){
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const v = entry.target;
+      if(entry.isIntersecting){
+        v.play().catch(()=>{});
+      } else {
+        v.pause();
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.feed-video-wrap video').forEach(v => {
+    observer.observe(v);
+  });
+  // Re-observar cuando se carga el feed
+  const grid = document.getElementById('feed-grid');
+  if(grid){
+    new MutationObserver(()=>{
+      grid.querySelectorAll('.feed-video-wrap video').forEach(v => {
+        observer.observe(v);
+      });
+    }).observe(grid, { childList:true });
+  }
+}
+window.addEventListener('load', ()=>{ init(); setTimeout(initVideoObserver, 1500); });
 </script>
 </body>
 </html>
