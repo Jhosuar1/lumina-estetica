@@ -951,19 +951,16 @@ function buildFeedMedia(m, idx){
 function buildInlineVideo(url, vid_id){
   return `<div class="feed-video-wrap" id="wrap-${vid_id}">
     <video id="${vid_id}" src="${url}"
-      autoplay muted loop playsinline preload="metadata"
+      autoplay muted loop playsinline
       controlsList="nodownload nofullscreen noremoteplayback"
       oncontextmenu="return false"
-      style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111">
+      style="width:100%;aspect-ratio:9/16;object-fit:cover;display:block;cursor:pointer"
+      onclick="toggleFeedVideo('${vid_id}')">
     </video>
-    <div class="feed-video-icon" id="icon-${vid_id}">▶</div>
-    <div class="feed-video-overlay">
-      <span class="feed-video-badge">▶ VIDEO</span>
-      <button class="feed-video-mute" id="mute-${vid_id}"
-        onclick="toggleMuteFeed('${vid_id}',event)">🔇 Sonido</button>
+    <div class="feed-video-controls">
+      <span class="feed-video-badge">🎬 VIDEO</span>
+      <button class="feed-video-mute" id="mute-${vid_id}" onclick="toggleMute('${vid_id}',event)">🔇 Activar sonido</button>
     </div>
-    <div onclick="toggleFeedVideo('${vid_id}')"
-      style="position:absolute;inset:0;z-index:1;cursor:pointer"></div>
   </div>`;
 }
   
@@ -984,13 +981,13 @@ function toggleFeedVideo(id){
   }
 }
 
-function toggleMuteFeed(id, e){
+function toggleMute(id, e){
   e.stopPropagation();
-  const v   = document.getElementById(id);
+  const v = document.getElementById(id);
   const btn = document.getElementById('mute-'+id);
   if(!v) return;
   v.muted = !v.muted;
-  btn.textContent = v.muted ? '🔇 Sonido' : '🔊 Silenciar';
+  btn.textContent = v.muted ? 'Activar sonido' : 'Silenciar';
 }
 
 function getEmbedUrl(url){
