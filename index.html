@@ -965,9 +965,20 @@ function buildInlineVideo(url, vid_id){
 }
   
 function toggleFeedVideo(id){
-  const v = document.getElementById(id);
+  const v    = document.getElementById(id);
+  const wrap = document.getElementById('wrap-'+id);
+  const icon = document.getElementById('icon-'+id);
   if(!v) return;
-  v.paused ? v.play() : v.pause();
+  if(v.paused){
+    v.play().catch(()=>{});
+    wrap?.classList.remove('paused');
+    // Ocultar ícono después de 800ms
+    if(icon){ icon.style.opacity='1'; setTimeout(()=>{ icon.style.opacity='0'; },800); }
+  } else {
+    v.pause();
+    wrap?.classList.add('paused');
+    if(icon){ icon.textContent='▶'; icon.style.opacity='1'; }
+  }
 }
 
 function toggleMute(id, e){
