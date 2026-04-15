@@ -958,27 +958,16 @@ function buildInlineVideo(url, vid_id){
       onclick="toggleFeedVideo('${vid_id}')">
     </video>
     <div class="feed-video-controls">
-      <span class="feed-video-badge">🎬 VIDEO</span>
-      <button class="feed-video-mute" id="mute-${vid_id}" onclick="toggleMute('${vid_id}',event)">🔇 Activar sonido</button>
+      <span class="feed-video-badge">VIDEO</span>
+      <button class="feed-video-mute" id="mute-${vid_id}" onclick="toggleMute('${vid_id}',event)">Activar sonido</button>
     </div>
   </div>`;
 }
   
 function toggleFeedVideo(id){
-  const v    = document.getElementById(id);
-  const wrap = document.getElementById('wrap-'+id);
-  const icon = document.getElementById('icon-'+id);
+  const v = document.getElementById(id);
   if(!v) return;
-  if(v.paused){
-    v.play().catch(()=>{});
-    wrap?.classList.remove('paused');
-    // Ocultar ícono después de 800ms
-    if(icon){ icon.style.opacity='1'; setTimeout(()=>{ icon.style.opacity='0'; },800); }
-  } else {
-    v.pause();
-    wrap?.classList.add('paused');
-    if(icon){ icon.textContent='▶'; icon.style.opacity='1'; }
-  }
+  v.paused ? v.play() : v.pause();
 }
 
 function toggleMute(id, e){
