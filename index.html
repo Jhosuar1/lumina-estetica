@@ -133,9 +133,7 @@ section{padding:96px 48px}
 .feed-card-badge{margin-left:auto;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--white);background:var(--gold);padding:3px 10px;border-radius:20px;white-space:nowrap}
 .feed-card-media{position:relative;overflow:hidden;cursor:pointer;background:#111}
 .feed-card-media img{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
-.feed-card-media-overlay{position:absolute;inset:0;background:rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;opacity:0;transition:.25s}
-.feed-card-media:hover .feed-card-media-overlay{opacity:1}
-.feed-card-media-overlay span{font-size:44px}
+.feed-card-media-overlay{display:none}
 /* Video feed — igual que el admin, autoplay silencioso */
 .feed-video-wrap{position:relative;overflow:hidden;background:#111;cursor:pointer}
 .feed-video-wrap video{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
@@ -944,9 +942,8 @@ function buildFeedMedia(m, idx){
     return buildInlineVideo(m.url, 'fv-'+m.id);
   }
   // Imagen
-  return `<div class="feed-card-media" onclick="openFeedLightbox(${idx})">
+  return `<div class="feed-card-media">
     <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy" style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111">
-    <div class="feed-card-media-overlay"><span>🔍</span></div>
   </div>`;
 }
 
