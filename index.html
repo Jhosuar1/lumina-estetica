@@ -999,6 +999,86 @@ function getEmbedUrl(url){
   m=url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
   if(m)return `https://drive.google.com/file/d/${m[1]}/preview`;
   return null;
+}function buildFeedMedia(m, idx){
+  // Carrusel
+  if(m.tipo==='carrusel' && m.media_urls?.length){
+    const id = 'fcar-'+m.id;
+    return `<div style="position:relative;overflow:hidden;background:#000;border-radius:0">
+      <div id="${id}"><div class="car-track" style="display:flex;transition:transform .38s cubic-bezier(.25,.8,.25,1)">
+        ${m.media_urls.map((url,i)=>`
+          <div style="min-width:100%">
+            ${(m.media_tipos||[])[i]==='video'
+              ? buildInlineVideo(url, `fv-${m.id}-${i}`)
+              : `<img src="${url}" style="width:100%;max-height:520px;object-fit:cover;display:block;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
+          </div>`).join('')}
+      </div></div>
+      ${m.media_urls.length>1?`
+        <button onclick="carNav('${id}',-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.3);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:2">‹</button>
+        <button onclick="carNav('${id}',1)"  style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.3);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:2">›</button>
+        <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:2">
+          ${m.media_urls.map((_,i)=>`<div id="${id}-dot-${i}" style="width:6px;height:6px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.4)'};transition:.2s;cursor:pointer" onclick="carGoTo('${id}',${i})"></div>`).join('')}
+        </div>
+        <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:3px 9px;border-radius:12px;backdrop-filter:blur(4px)">1 / ${m.media_urls.length}</div>`:''}
+    </div>`;
+  }
+  // Link externo (YouTube / Vimeo / Drive)
+  if(m.tipo==='video_link' || m.url_externa){
+    const embed = getEmbedUrl(m.url_externa||m.url);
+    return embed
+      ? `<div style="position:relative;padding-bottom:56.25%;background:#000"><iframe src="${embed}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe></div>`
+      : buildInlineVideo(m.url_externa||m.url, 'fv-ext-'+m.id);
+  }
+  // Video directo — autoplay silencioso tipo reel
+  if(m.tipo==='video'){
+    return buildInlineVideo(m.url, 'fv-'+m.id);
+  }
+  // Imagen
+  return `<div class="feed-card-media" onclick="openFeedLightbox(${idx})">
+    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy" style="width:100%;max-height:520px;object-fit:cover;display:block">
+    <div class="feed-card-media-overlay"><span>🔍</span></div>
+  </div>`;
+}
+
+function buildInlineVideo(url, vid_id){
+  return `<div class="feed-video-wrap" id="wrap-${vid_id}">
+    <video id="${vid_id}" src="${url}"
+      autoplay muted loop playsinline
+      controlsList="nodownload nofullscreen noremoteplayback"
+      oncontextmenu="return false"
+      style="width:100%;aspect-ratio:9/16;object-fit:cover;display:block;cursor:pointer"
+      onclick="toggleFeedVideo('${vid_id}')">
+    </video>
+    <div class="feed-video-controls">
+      <span class="feed-video-badge">🎬 VIDEO</span>
+      <button class="feed-video-mute" id="mute-${vid_id}" onclick="toggleMute('${vid_id}',event)">🔇 Activar sonido</button>
+    </div>
+  </div>`;
+}
+
+function toggleFeedVideo(id){
+  const v = document.getElementById(id);
+  if(!v) return;
+  v.paused ? v.play() : v.pause();
+}
+
+function toggleMute(id, e){
+  e.stopPropagation();
+  const v = document.getElementById(id);
+  const btn = document.getElementById('mute-'+id);
+  if(!v) return;
+  v.muted = !v.muted;
+  btn.textContent = v.muted ? '🔇 Activar sonido' : '🔊 Silenciar';
+}
+
+function getEmbedUrl(url){
+  if(!url)return null;
+  let m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if(m)return `https://www.youtube.com/embed/${m[1]}?rel=0`;
+  m=url.match(/vimeo\.com\/(\d+)/);
+  if(m)return `https://player.vimeo.com/video/${m[1]}`;
+  m=url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+  if(m)return `https://drive.google.com/file/d/${m[1]}/preview`;
+  return null;
 }
 
 let carPositions={};
