@@ -172,6 +172,27 @@ section{padding:96px 48px}
 .feed-card-caption.truncated{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .feed-card-readmore{font-size:12px;color:var(--gold);cursor:pointer;background:none;border:none;font-family:var(--font-b);padding:0;margin-bottom:8px}
 .feed-card-date{font-size:11px;color:var(--text-light);letter-spacing:.5px}
+/* Contenedor universal para video y embeds */
+.feed-media-container {
+  width: 100%;
+  aspect-ratio: 9/16; /* Tamaño tipo Reel */
+  background: #000;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* El contenido (video o iframe) llena el contenedor */
+.feed-media-container video, 
+.feed-media-container iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Esto evita que el video se vea "estirado" o gigante */
+  border: none;
+}
+
 
 /* RECOMENDACIONES */
 .recomendaciones{background:linear-gradient(160deg,var(--cream) 0%,var(--rose-pale) 100%)}
@@ -909,44 +930,32 @@ async function loadFeed(){
   }catch(e){}
 }
 
-function buildFeedMedia(m, idx){
-  // Carrusel
-  if(m.tipo==='carrusel' && m.media_urls?.length){
-    const id = 'fcar-'+m.id;
-    return `<div style="position:relative;overflow:hidden;background:#000;border-radius:0">
-      <div id="${id}"><div class="car-track" style="display:flex;transition:transform .38s cubic-bezier(.25,.8,.25,1)">
-        ${m.media_urls.map((url,i)=>`
-          <div style="min-width:100%">
-            ${(m.media_tipos||[])[i]==='video'
-              ? buildInlineVideo(url, `fv-${m.id}-${i}`)
-              : `<img src="${url}" style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
-          </div>`).join('')}
-      </div></div>
-      ${m.media_urls.length>1?`
-        <button onclick="carNav('${id}',-1)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.3);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:2">‹</button>
-        <button onclick="carNav('${id}',1)"  style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.3);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:2">›</button>
-        <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:2">
-          ${m.media_urls.map((_,i)=>`<div id="${id}-dot-${i}" style="width:6px;height:6px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.4)'};transition:.2s;cursor:pointer" onclick="carGoTo('${id}',${i})"></div>`).join('')}
-        </div>
-        <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:3px 9px;border-radius:12px;backdrop-filter:blur(4px)">1 / ${m.media_urls.length}</div>`:''}
+function buildFeedMedia(m, idx) {
+  // 1. Links externos (YouTube, Vimeo, etc.)
+  if (m.tipo === 'video_link' || m.url_externa) {
+    const embed = getEmbedUrl(m.url_externa || m.url);
+    if (embed) {
+      return `<div class="feed-media-container">
+        <iframe src="${embed}" allow="autoplay; fullscreen"></iframe>
+      </div>`;
+    }
+  }
+
+  // 2. Video directo (Archivo .mp4, etc.)
+  if (m.tipo === 'video' || (m.url && m.url.includes('.mp4'))) {
+    return `<div class="feed-media-container" id="wrap-fv-${m.id}">
+      <video id="fv-${m.id}" src="${m.url}" autoplay muted loop playsinline
+        onclick="toggleFeedVideo('fv-${m.id}')">
+      </video>
     </div>`;
   }
-  // Link externo (YouTube / Vimeo / Drive)
-  if(m.tipo==='video_link' || m.url_externa){
-    const embed = getEmbedUrl(m.url_externa||m.url);
-    return embed
-      ? `<div style="position:relative;padding-bottom:56.25%;background:#000"><iframe src="${embed}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe></div>`
-      : buildInlineVideo(m.url_externa||m.url, 'fv-ext-'+m.id);
-  }
-  // Video directo — autoplay silencioso tipo reel
-  if(m.tipo==='video'){
-    return buildInlineVideo(m.url, 'fv-'+m.id);
-  }
-  // Imagen
-  return `<div class="feed-card-media">
-    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy" style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111">
+
+  // 3. Imagen (por defecto)
+  return `<div class="feed-media-container">
+    <img src="${m.url}" loading="lazy" style="width:100%; height:100%; object-fit:cover;">
   </div>`;
 }
+
 
 function buildInlineVideo(url, vid_id){
   return `<div class="feed-video-wrap" id="wrap-${vid_id}">
@@ -990,16 +999,29 @@ function toggleMute(id, e){
   btn.textContent = v.muted ? 'Activar sonido' : 'Silenciar';
 }
 
-function getEmbedUrl(url){
-  if(!url)return null;
-  let m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-  if(m)return `https://www.youtube.com/embed/${m[1]}?rel=0`;
-  m=url.match(/vimeo\.com\/(\d+)/);
-  if(m)return `https://player.vimeo.com/video/${m[1]}`;
-  m=url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
-  if(m)return `https://drive.google.com/file/d/${m[1]}/preview`;
+function getEmbedUrl(url) {
+  if (!url) return null;
+  
+  // YouTube
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (yt) {
+    // autoplay=1 y mute=1 son obligatorios para que el navegador lo permita
+    return `https://youtube.com{yt[1]}?autoplay=1&mute=1&loop=1&playlist=${yt[1]}&controls=0&modestbranding=1&rel=0`;
+  }
+  
+  // Vimeo
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if (vm) {
+    return `https://vimeo.com{vm[1]}?autoplay=1&muted=1&loop=1&background=1`;
+  }
+
+  // Google Drive
+  const gd = url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+  if (gd) return `https://google.com{gd[1]}/preview`;
+
   return null;
 }
+
 
 let carPositions={};
 function carNav(id,dir){
