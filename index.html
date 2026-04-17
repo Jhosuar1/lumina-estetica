@@ -135,14 +135,9 @@ section{padding:96px 48px}
 .feed-card-media img{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
 .feed-card-media-overlay{display:none}
 /* Video feed — igual que el admin, autoplay silencioso */
-.feed-video-wrap{position:relative;overflow:hidden;background:#111;cursor:pointer}
-.feed-video-wrap video{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
-.feed-video-overlay{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(to top,rgba(0,0,0,.55),transparent);opacity:0;transition:.25s;display:flex;align-items:center;justify-content:space-between}
-.feed-video-wrap:hover .feed-video-overlay{opacity:1}
-.feed-video-mute{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:4px 12px;font-size:10px;cursor:pointer;font-family:var(--font-b);backdrop-filter:blur(4px)}
-.feed-video-badge{font-size:9px;color:rgba(255,255,255,.85);letter-spacing:1.5px;text-transform:uppercase}
-.feed-video-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;opacity:0;transition:opacity .22s;pointer-events:none;z-index:2}
-.feed-video-wrap.paused .feed-video-icon{opacity:1}
+.feed-video-wrap{width:100%;background:#111;overflow:hidden;border-radius:0}
+.feed-video-wrap video{width:100%;max-height:520px;display:block;background:#111;outline:none}
+  
 .feed-card-body{padding:14px 16px}
 .feed-card-caption{font-size:14px;color:var(--text-mid);line-height:1.65;white-space:pre-wrap;margin-bottom:8px}
 .feed-card-caption.truncated{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -951,45 +946,13 @@ function buildFeedMedia(m, idx){
 function buildInlineVideo(url, vid_id){
   return `<div class="feed-video-wrap" id="wrap-${vid_id}">
     <video id="${vid_id}" src="${url}"
-      autoplay muted loop playsinline
-      controlsList="nodownload nofullscreen noremoteplayback"
-      oncontextmenu="return false"
-      style="width:100%;aspect-ratio:9/16;object-fit:cover;display:block;cursor:pointer"
-      onclick="toggleFeedVideo('${vid_id}')">
+      autoplay muted loop playsinline preload="metadata"
+      controls
+      style="width:100%;max-height:520px;display:block;background:#111;outline:none">
     </video>
-    <div class="feed-video-controls">
-      <span class="feed-video-badge">VIDEO</span>
-      <button class="feed-video-mute" id="mute-${vid_id}" onclick="toggleMute('${vid_id}',event)">Activar sonido</button>
-    </div>
   </div>`;
 }
   
-function toggleFeedVideo(id){
-  const v    = document.getElementById(id);
-  const wrap = document.getElementById('wrap-'+id);
-  const icon = document.getElementById('icon-'+id);
-  if(!v) return;
-  if(v.paused){
-    v.play().catch(()=>{});
-    wrap?.classList.remove('paused');
-    // Ocultar ícono después de 800ms
-    if(icon){ icon.style.opacity='1'; setTimeout(()=>{ icon.style.opacity='0'; },800); }
-  } else {
-    v.pause();
-    wrap?.classList.add('paused');
-    if(icon){ icon.textContent='▶'; icon.style.opacity='1'; }
-  }
-}
-
-function toggleMute(id, e){
-  e.stopPropagation();
-  const v = document.getElementById(id);
-  const btn = document.getElementById('mute-'+id);
-  if(!v) return;
-  v.muted = !v.muted;
-  btn.textContent = v.muted ? 'Activar sonido' : 'Silenciar';
-}
-
 function getEmbedUrl(url){
   if(!url)return null;
   let m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -1434,15 +1397,15 @@ function initVideoObserver(){
   const io = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       const v = entry.target;
-      const wrap = v.closest('.feed-video-wrap');
       if(entry.isIntersecting){
+        v.muted = true; // empieza muted para que autoplay funcione
         v.play().catch(()=>{});
-        wrap?.classList.remove('paused');
       } else {
         v.pause();
+        v.muted = true; // vuelve a muted al salir para el próximo scroll
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0.4 });
 
   // Observar videos existentes
   document.querySelectorAll('.feed-video-wrap video').forEach(v => io.observe(v));
