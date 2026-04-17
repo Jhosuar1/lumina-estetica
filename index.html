@@ -134,9 +134,9 @@ section{padding:96px 48px}
 .feed-card-media{position:relative;overflow:hidden;cursor:pointer;background:#111}
 .feed-card-media img{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
 .feed-card-media-overlay{display:none}
-/* Video feed — igual que el admin, autoplay silencioso */
-.feed-video-wrap{width:100%;background:#111;overflow:hidden;border-radius:0}
-.feed-video-wrap video{width:100%;max-height:520px;display:block;background:#111;outline:none}
+  
+.feed-video-wrap{width:100%;background:#111;line-height:0}
+.feed-video-wrap video{width:100%;max-height:560px;display:block;background:#111;outline:none}
   
 .feed-card-body{padding:14px 16px}
 .feed-card-caption{font-size:14px;color:var(--text-mid);line-height:1.65;white-space:pre-wrap;margin-bottom:8px}
@@ -946,9 +946,9 @@ function buildFeedMedia(m, idx){
 function buildInlineVideo(url, vid_id){
   return `<div class="feed-video-wrap" id="wrap-${vid_id}">
     <video id="${vid_id}" src="${url}"
-      autoplay muted loop playsinline preload="metadata"
+      autoplay muted playsinline preload="metadata"
       controls
-      style="width:100%;max-height:520px;display:block;background:#111;outline:none">
+      style="width:100%;max-height:560px;display:block;background:#111;outline:none">
     </video>
   </div>`;
 }
@@ -1398,11 +1398,12 @@ function initVideoObserver(){
     entries.forEach(entry => {
       const v = entry.target;
       if(entry.isIntersecting){
-        v.muted = true; // empieza muted para que autoplay funcione
+        v.muted = true; // muted obligatorio para autoplay
         v.play().catch(()=>{});
       } else {
         v.pause();
-        v.muted = true; // vuelve a muted al salir para el próximo scroll
+        v.currentTime = 0; // rebobina al salir
+        v.muted = true;
       }
     });
   }, { threshold: 0.4 });
