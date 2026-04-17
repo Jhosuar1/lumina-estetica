@@ -135,8 +135,8 @@ section{padding:96px 48px}
 .feed-card-media img{width:100%;max-height:520px;object-fit:contain;display:block;background:#111}
 .feed-card-media-overlay{display:none}
   
-.feed-video-wrap{width:100%;background:#000;position:relative;height:400px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.feed-video-wrap video{width:100%;height:100%;display:block;background:#000;outline:none;object-fit:contain;flex-shrink:0}
+.feed-video-wrap{width:100%;background:#000;display:block;line-height:0}
+.feed-video-wrap video{width:100%;max-height:480px;display:block;background:#000;outline:none}
   
 .feed-card-body{padding:14px 16px}
 .feed-card-caption{font-size:14px;color:var(--text-mid);line-height:1.65;white-space:pre-wrap;margin-bottom:8px}
@@ -982,32 +982,11 @@ function getEmbedUrl(url){
 function buildInlineVideo(url, vid_id){
   return `<div class="feed-video-wrap" id="wrap-${vid_id}">
     <video id="${vid_id}" src="${url}"
-      autoplay muted loop playsinline
-      controlsList="nodownload nofullscreen noremoteplayback"
-      oncontextmenu="return false"
-      style="width:100%;aspect-ratio:9/16;object-fit:cover;display:block;cursor:pointer"
-      onclick="toggleFeedVideo('${vid_id}')">
+      autoplay muted playsinline preload="metadata"
+      controls controlsList="nodownload" oncontextmenu="return false"
+      style="width:100%;max-height:480px;display:block;background:#000;outline:none">
     </video>
-    <div class="feed-video-controls">
-      <span class="feed-video-badge">🎬 VIDEO</span>
-      <button class="feed-video-mute" id="mute-${vid_id}" onclick="toggleMute('${vid_id}',event)">🔇 Activar sonido</button>
-    </div>
   </div>`;
-}
-
-function toggleFeedVideo(id){
-  const v = document.getElementById(id);
-  if(!v) return;
-  v.paused ? v.play() : v.pause();
-}
-
-function toggleMute(id, e){
-  e.stopPropagation();
-  const v = document.getElementById(id);
-  const btn = document.getElementById('mute-'+id);
-  if(!v) return;
-  v.muted = !v.muted;
-  btn.textContent = v.muted ? '🔇 Activar sonido' : '🔊 Silenciar';
 }
 
 function getEmbedUrl(url){
