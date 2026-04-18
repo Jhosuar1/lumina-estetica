@@ -881,6 +881,15 @@ async function loadFeed(){
   }catch(e){}
 }
 
+function getFmtStyle(formato){
+  switch(formato){
+    case 'contain':  return 'max-height:520px;object-fit:contain;background:#111';
+    case 'wide':     return 'aspect-ratio:16/9;object-fit:cover';
+    case 'portrait': return 'aspect-ratio:4/5;object-fit:cover';
+    default:         return 'aspect-ratio:1/1;object-fit:cover';
+  }
+}
+
 function buildFeedMedia(m, idx){
   // Carrusel
   if(m.tipo==='carrusel' && m.media_urls?.length){
@@ -891,7 +900,7 @@ function buildFeedMedia(m, idx){
           <div style="min-width:100%">
             ${(m.media_tipos||[])[i]==='video'
               ? buildInlineVideo(url, `fv-${m.id}-${i}`)
-              : `<img src="${url}" style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
+              : `<img src="${url}" style="width:100%;${getFmtStyle(m.formato)};display:block;cursor:pointer" onclick="openFeedLightbox(${idx})" loading="lazy">`}
           </div>`).join('')}
       </div></div>
       ${m.media_urls.length>1?`
@@ -916,7 +925,7 @@ function buildFeedMedia(m, idx){
   }
   // Imagen
   return `<div class="feed-card-media">
-    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy" style="width:100%;max-height:520px;object-fit:contain;display:block;background:#111">
+    <img src="${m.url}" alt="${m.titulo||'LÚMINA'}" loading="lazy" style="width:100%;${getFmtStyle(m.formato)};display:block">
   </div>`;
 }
 
