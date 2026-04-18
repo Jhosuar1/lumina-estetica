@@ -496,8 +496,16 @@ tbody tr:hover{background:var(--rose-pale)}
                 <label>Descripción / Caption</label>
                 <textarea id="post-caption" rows="5" placeholder="Describe el resultado, el tratamiento o comparte un tip... ✨"></textarea>
               </div>
+              <div class="fg">
+                <label>Formato de visualización</label>
+                <select id="post-formato">
+                  <option value="cover">📷 Cuadrado — recortado (como Instagram)</option>
+                  <option value="contain">🖼️ Completo — imagen entera con fondo negro</option>
+                  <option value="wide">🎬 Paisaje — 16:9 (ideal para videos y fotos horizontales)</option>
+                  <option value="portrait">📱 Retrato — 4:5 (fotos verticales)</option>
+                </select>
+              </div>
               <button class="btn btn-p" style="width:100%;padding:13px" onclick="publishPost()">Publicar 🌸</button>
-              <p style="font-size:11px;color:var(--text-light);margin-top:8px;text-align:center">Puedes subir varias imágenes — se verán como carrusel</p>
             </div>
           </div>
         </div>
@@ -1493,26 +1501,21 @@ async function publishPost(){
 
   try {
     if (videoLink) {
+      const fmt = document.getElementById('post-formato').value;
       await dbPost({
-        tipo: 'video_link',
-        url: videoLink,
-        url_externa: videoLink,
-        titulo: cat || 'Publicación',
-        descripcion: caption,
-        activo: true,
-        orden: 0
+        tipo: 'video_link', url: videoLink, url_externa: videoLink,
+        titulo: cat||'Publicación', descripcion: caption,
+        activo: true, orden: 0, formato: fmt
       });
 
     } else if (pendingFiles.length === 1) {
       btn.textContent = 'Subiendo 1/1...';
       const url = await uploadToStorage(pendingFiles[0].file);
+      const fmt = document.getElementById('post-formato').value;
       await dbPost({
-        tipo: pendingFiles[0].tipo,
-        url: url,
-        titulo: cat || 'Publicación',
-        descripcion: caption,
-        activo: true,
-        orden: 0
+        tipo: pendingFiles[0].tipo, url,
+        titulo: cat||'Publicación', descripcion: caption,
+        activo: true, orden: 0, formato: fmt
       });
 
     } else {
@@ -1523,16 +1526,13 @@ async function publishPost(){
         const url = await uploadToStorage(pendingFiles[i].file);
         urls.push(url); tipos.push(pendingFiles[i].tipo);
       }
+      const fmt = document.getElementById('post-formato').value;
       await dbPost({
-        tipo: 'carrusel',
-        url: urls[0],
-        media_urls: urls,
-        media_tipos: tipos,
-        titulo: cat || 'Publicación',
-        descripcion: caption,
-        activo: true,
-        orden: 0
-});
+        tipo: 'carrusel', url: urls[0],
+        media_urls: urls, media_tipos: tipos,
+        titulo: cat||'Publicación', descripcion: caption,
+        activo: true, orden: 0, formato: fmt
+      });
     }
 
     // Limpiar
@@ -1618,6 +1618,15 @@ async function loadGalleryAdmin(){
   }).join('');
 }
 
+function getFmtStyle(formato){
+  switch(formato){
+    case 'contain':  return 'max-height:520px;object-fit:contain;background:#111';
+    case 'wide':     return 'aspect-ratio:16/9;object-fit:cover';
+    case 'portrait': return 'aspect-ratio:4/5;object-fit:cover';
+    default:         return 'aspect-ratio:1/1;object-fit:cover'; // cover = cuadrado
+  }
+}
+
 function buildMediaHTML(m, isAdmin=false){
   const clickFn = isAdmin ? `openLightbox(${GALLERY_POSTS.indexOf(m)})` : `openFeedLightbox(${GALLERY_POSTS.indexOf(m)})`;
   if (m.tipo === 'carrusel' && m.media_urls && m.media_urls.length) {
@@ -1629,7 +1638,7 @@ function buildMediaHTML(m, isAdmin=false){
             <div style="min-width:100%;position:relative">
               ${(m.media_tipos||[])[i]==='video'
                 ? `<video src="${url}" controls controlsList="nodownload" oncontextmenu="return false" style="width:100%;max-height:480px;display:block;background:#000;outline:none"></video>`
-                : `<img src="${url}" style="width:100%;max-height:480px;object-fit:cover;display:block;cursor:pointer" onclick="openLightboxAt(${GALLERY_POSTS.indexOf(m)},${i})">`}
+                : `<img src="${url}" style="width:100%;${getFmtStyle(m.formato)};display:block;cursor:pointer" onclick="openLightboxAt(${GALLERY_POSTS.indexOf(m)},${i})">`}
             </div>`).join('')}
         </div>
       </div>
@@ -1659,7 +1668,7 @@ function buildMediaHTML(m, isAdmin=false){
   }
   // imagen normal
   return `<div class="post-media-wrap" onclick="${clickFn}">
-    <img src="${m.url}" class="post-media square" alt="${m.titulo||''}">
+    <img src="${m.url}" style="width:100%;${getFmtStyle(m.formato)};display:block;background:#111;" alt="${m.titulo||''}">
     <div class="post-media-overlay"><span>🔍</span></div>
     ${!m.activo?`<div class="post-hidden-badge">👁 Oculta</div>`:''}
   </div>`;
